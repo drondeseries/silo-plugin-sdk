@@ -32,6 +32,7 @@ const (
 	RuntimeHost_ResolveCatalogImageURLs_FullMethodName    = "/silo.plugin.v1.RuntimeHost/ResolveCatalogImageURLs"
 	RuntimeHost_MintScopedStream_FullMethodName           = "/silo.plugin.v1.RuntimeHost/MintScopedStream"
 	RuntimeHost_CallPluginHTTP_FullMethodName             = "/silo.plugin.v1.RuntimeHost/CallPluginHTTP"
+	RuntimeHost_UpsertVirtualMedia_FullMethodName         = "/silo.plugin.v1.RuntimeHost/UpsertVirtualMedia"
 )
 
 // RuntimeHostClient is the client API for RuntimeHost service.
@@ -83,6 +84,10 @@ type RuntimeHostClient interface {
 	// through the host control plane. Calls are treated as authenticated
 	// service-to-service traffic, but never as admin traffic.
 	CallPluginHTTP(ctx context.Context, in *CallPluginHTTPRequest, opts ...grpc.CallOption) (*CallPluginHTTPResponse, error)
+	// UpsertVirtualMedia transactionally registers plugin-owned virtual media
+	// in a host library. The host validates library compatibility, owns all
+	// catalog writes, and emits the same invalidation signals as a scanner.
+	UpsertVirtualMedia(ctx context.Context, in *UpsertVirtualMediaRequest, opts ...grpc.CallOption) (*UpsertVirtualMediaResponse, error)
 }
 
 type runtimeHostClient struct {
@@ -223,6 +228,16 @@ func (c *runtimeHostClient) CallPluginHTTP(ctx context.Context, in *CallPluginHT
 	return out, nil
 }
 
+func (c *runtimeHostClient) UpsertVirtualMedia(ctx context.Context, in *UpsertVirtualMediaRequest, opts ...grpc.CallOption) (*UpsertVirtualMediaResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertVirtualMediaResponse)
+	err := c.cc.Invoke(ctx, RuntimeHost_UpsertVirtualMedia_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RuntimeHostServer is the server API for RuntimeHost service.
 // All implementations should embed UnimplementedRuntimeHostServer
 // for forward compatibility.
@@ -272,6 +287,10 @@ type RuntimeHostServer interface {
 	// through the host control plane. Calls are treated as authenticated
 	// service-to-service traffic, but never as admin traffic.
 	CallPluginHTTP(context.Context, *CallPluginHTTPRequest) (*CallPluginHTTPResponse, error)
+	// UpsertVirtualMedia transactionally registers plugin-owned virtual media
+	// in a host library. The host validates library compatibility, owns all
+	// catalog writes, and emits the same invalidation signals as a scanner.
+	UpsertVirtualMedia(context.Context, *UpsertVirtualMediaRequest) (*UpsertVirtualMediaResponse, error)
 }
 
 // UnimplementedRuntimeHostServer should be embedded to have
@@ -319,6 +338,9 @@ func (UnimplementedRuntimeHostServer) MintScopedStream(context.Context, *MintSco
 }
 func (UnimplementedRuntimeHostServer) CallPluginHTTP(context.Context, *CallPluginHTTPRequest) (*CallPluginHTTPResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CallPluginHTTP not implemented")
+}
+func (UnimplementedRuntimeHostServer) UpsertVirtualMedia(context.Context, *UpsertVirtualMediaRequest) (*UpsertVirtualMediaResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpsertVirtualMedia not implemented")
 }
 func (UnimplementedRuntimeHostServer) testEmbeddedByValue() {}
 
@@ -574,6 +596,24 @@ func _RuntimeHost_CallPluginHTTP_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RuntimeHost_UpsertVirtualMedia_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertVirtualMediaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RuntimeHostServer).UpsertVirtualMedia(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RuntimeHost_UpsertVirtualMedia_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RuntimeHostServer).UpsertVirtualMedia(ctx, req.(*UpsertVirtualMediaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RuntimeHost_ServiceDesc is the grpc.ServiceDesc for RuntimeHost service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -632,6 +672,10 @@ var RuntimeHost_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CallPluginHTTP",
 			Handler:    _RuntimeHost_CallPluginHTTP_Handler,
+		},
+		{
+			MethodName: "UpsertVirtualMedia",
+			Handler:    _RuntimeHost_UpsertVirtualMedia_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

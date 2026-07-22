@@ -64,6 +64,44 @@ service RuntimeHost {
   // through the host control plane. Calls are treated as authenticated
   // service-to-service traffic, but never as admin traffic.
   rpc CallPluginHTTP(CallPluginHTTPRequest) returns (CallPluginHTTPResponse);
+
+  // UpsertVirtualMedia transactionally registers plugin-owned virtual media
+  // in a host library. The host validates library compatibility, owns all
+  // catalog writes, and emits the same invalidation signals as a scanner.
+  rpc UpsertVirtualMedia(UpsertVirtualMediaRequest) returns (UpsertVirtualMediaResponse);
+}
+
+message UpsertVirtualMediaRequest {
+  string library_id = 1;
+  string media_type = 2; // "movie" or "series"
+  string title = 3;
+  int32 year = 4;
+  string imdb_id = 5;
+  string tmdb_id = 6;
+  string tvdb_id = 7;
+  string overview = 8;
+  repeated string genres = 9;
+  string poster_path = 10;
+  string backdrop_path = 11;
+  string virtual_uri = 12;
+  repeated VirtualEpisode episodes = 13;
+}
+
+message VirtualEpisode {
+  int32 season_number = 1;
+  int32 episode_number = 2;
+  string title = 3;
+  string overview = 4;
+  int64 air_date_unix = 5;
+  int32 runtime_minutes = 6;
+  string still_path = 7;
+  string virtual_uri = 8;
+}
+
+message UpsertVirtualMediaResponse {
+  string media_id = 1;
+  string library_id = 2;
+  int32 episodes_upserted = 3;
 }
 
 message PublishEventRequest {

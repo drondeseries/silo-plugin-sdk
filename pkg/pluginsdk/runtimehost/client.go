@@ -34,6 +34,71 @@ type CallPluginHTTPResponse struct {
 	Body       []byte
 }
 
+type VirtualEpisode struct {
+	SeasonNumber   int
+	EpisodeNumber  int
+	Title          string
+	Overview       string
+	AirDate        time.Time
+	RuntimeMinutes int
+	StillPath      string
+	VirtualURI     string
+}
+
+type VirtualMediaRequest struct {
+	LibraryID    string
+	MediaType    string
+	Title        string
+	Year         int
+	IMDbID       string
+	TMDBID       string
+	TVDBID       string
+	Overview     string
+	Genres       []string
+	PosterPath   string
+	BackdropPath string
+	VirtualURI   string
+	Episodes     []VirtualEpisode
+}
+
+type VirtualMediaResult struct {
+	MediaID          string
+	LibraryID        string
+	EpisodesUpserted int
+}
+
+// UpsertVirtualMedia registers plugin-owned virtual media through the host's
+// catalog service. Plugins never need database credentials or schema access.
+func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest) (*VirtualMediaResult, error) {
+	if req.LibraryID == "" {
+		return nil, fmt.Errorf("runtimehost: library id is required")
+	}
+	if req.MediaType != "movie" && req.MediaType != "series" {
+		return nil, fmt.Errorf("runtimehost: media type must be movie or series")
+	}
+	if req.Title == "" || req.VirtualURI == "" {
+		return nil, fmt.Errorf("runtimehost: title and virtual URI are required")
+	}
+	episodes := make([]*pluginv1.VirtualEpisode, 0, len(req.Episodes))
+	for _, episode := range req.Episodes {
+		episodes = append(episodes, &pluginv1.VirtualEpisode{
+			SeasonNumber: int32(episode.SeasonNumber), EpisodeNumber: int32(episode.EpisodeNumber),
+			Title: episode.Title, Overview: episode.Overview, AirDateUnix: episode.AirDate.Unix(),
+			RuntimeMinutes: int32(episode.RuntimeMinutes), StillPath: episode.StillPath, VirtualUri: episode.VirtualURI,
+		})
+	}
+	resp, err := c.rpc.UpsertVirtualMedia(ctx, &pluginv1.UpsertVirtualMediaRequest{
+		LibraryId: req.LibraryID, MediaType: req.MediaType, Title: req.Title, Year: int32(req.Year),
+		ImdbId: req.IMDbID, TmdbId: req.TMDBID, TvdbId: req.TVDBID, Overview: req.Overview,
+		Genres: req.Genres, PosterPath: req.PosterPath, BackdropPath: req.BackdropPath,
+		VirtualUri: req.VirtualURI, Episodes: episodes,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &VirtualMediaResult{MediaID: resp.GetMediaId(), LibraryID: resp.GetLibraryId(), EpisodesUpserted: int(resp.GetEpisodesUpserted())}, nil
+}
+
 func (c *Client) CallPluginHTTP(ctx context.Context, req CallPluginHTTPRequest) (*CallPluginHTTPResponse, error) {
 	if req.InstallationID <= 0 {
 		return nil, fmt.Errorf("runtimehost: installation id is required")

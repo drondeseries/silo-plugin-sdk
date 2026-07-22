@@ -98,6 +98,7 @@ Plugins talk to the host through the `RuntimeHost` service, accessed via `pkg/pl
 - `ResolveCatalogImageURLs` — resolve stored poster/backdrop image paths into host-generated browser URLs.
 - `MintScopedStream` — create short-lived, narrowly scoped stream grants for guest/public workflows.
 - `CallPluginHTTP` — invoke another installed plugin's `http_routes.v1` handler through the host control plane.
+- `UpsertVirtualMedia` — transactionally register plugin-owned virtual movies, series, seasons, episodes, and playback URIs without exposing the host database.
 - `SetGlobalConfigEntry` — persist plugin-owned config that admins didn't set via the manifest form.
 
 For plugin-to-plugin JSON calls, prefer the helper layer:
