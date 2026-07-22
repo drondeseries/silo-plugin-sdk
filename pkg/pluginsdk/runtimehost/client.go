@@ -46,19 +46,20 @@ type VirtualEpisode struct {
 }
 
 type VirtualMediaRequest struct {
-	LibraryID    string
-	MediaType    string
-	Title        string
-	Year         int
-	IMDbID       string
-	TMDBID       string
-	TVDBID       string
-	Overview     string
-	Genres       []string
-	PosterPath   string
-	BackdropPath string
-	VirtualURI   string
-	Episodes     []VirtualEpisode
+	LibraryID      string
+	MediaType      string
+	Title          string
+	Year           int
+	IMDbID         string
+	TMDBID         string
+	TVDBID         string
+	Overview       string
+	Genres         []string
+	PosterPath     string
+	BackdropPath   string
+	VirtualURI     string
+	RuntimeMinutes int
+	Episodes       []VirtualEpisode
 }
 
 type VirtualMediaResult struct {
@@ -91,7 +92,7 @@ func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest
 		LibraryId: req.LibraryID, MediaType: req.MediaType, Title: req.Title, Year: int32(req.Year),
 		ImdbId: req.IMDbID, TmdbId: req.TMDBID, TvdbId: req.TVDBID, Overview: req.Overview,
 		Genres: req.Genres, PosterPath: req.PosterPath, BackdropPath: req.BackdropPath,
-		VirtualUri: req.VirtualURI, Episodes: episodes,
+		VirtualUri: req.VirtualURI, RuntimeMinutes: int32(req.RuntimeMinutes), Episodes: episodes,
 	})
 	if err != nil {
 		return nil, err

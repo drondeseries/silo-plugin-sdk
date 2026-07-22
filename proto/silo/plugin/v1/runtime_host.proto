@@ -85,6 +85,9 @@ message UpsertVirtualMediaRequest {
   string backdrop_path = 11;
   string virtual_uri = 12;
   repeated VirtualEpisode episodes = 13;
+  // Canonical catalog runtime. Playback may use a verified source duration
+  // for the active session without overwriting this value.
+  int32 runtime_minutes = 14;
 }
 
 message VirtualEpisode {

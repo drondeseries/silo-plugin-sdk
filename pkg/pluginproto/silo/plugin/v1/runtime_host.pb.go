@@ -23,22 +23,25 @@ const (
 )
 
 type UpsertVirtualMediaRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	LibraryId     string                 `protobuf:"bytes,1,opt,name=library_id,json=libraryId,proto3" json:"library_id,omitempty"`
-	MediaType     string                 `protobuf:"bytes,2,opt,name=media_type,json=mediaType,proto3" json:"media_type,omitempty"` // "movie" or "series"
-	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Year          int32                  `protobuf:"varint,4,opt,name=year,proto3" json:"year,omitempty"`
-	ImdbId        string                 `protobuf:"bytes,5,opt,name=imdb_id,json=imdbId,proto3" json:"imdb_id,omitempty"`
-	TmdbId        string                 `protobuf:"bytes,6,opt,name=tmdb_id,json=tmdbId,proto3" json:"tmdb_id,omitempty"`
-	TvdbId        string                 `protobuf:"bytes,7,opt,name=tvdb_id,json=tvdbId,proto3" json:"tvdb_id,omitempty"`
-	Overview      string                 `protobuf:"bytes,8,opt,name=overview,proto3" json:"overview,omitempty"`
-	Genres        []string               `protobuf:"bytes,9,rep,name=genres,proto3" json:"genres,omitempty"`
-	PosterPath    string                 `protobuf:"bytes,10,opt,name=poster_path,json=posterPath,proto3" json:"poster_path,omitempty"`
-	BackdropPath  string                 `protobuf:"bytes,11,opt,name=backdrop_path,json=backdropPath,proto3" json:"backdrop_path,omitempty"`
-	VirtualUri    string                 `protobuf:"bytes,12,opt,name=virtual_uri,json=virtualUri,proto3" json:"virtual_uri,omitempty"`
-	Episodes      []*VirtualEpisode      `protobuf:"bytes,13,rep,name=episodes,proto3" json:"episodes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	LibraryId    string                 `protobuf:"bytes,1,opt,name=library_id,json=libraryId,proto3" json:"library_id,omitempty"`
+	MediaType    string                 `protobuf:"bytes,2,opt,name=media_type,json=mediaType,proto3" json:"media_type,omitempty"` // "movie" or "series"
+	Title        string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Year         int32                  `protobuf:"varint,4,opt,name=year,proto3" json:"year,omitempty"`
+	ImdbId       string                 `protobuf:"bytes,5,opt,name=imdb_id,json=imdbId,proto3" json:"imdb_id,omitempty"`
+	TmdbId       string                 `protobuf:"bytes,6,opt,name=tmdb_id,json=tmdbId,proto3" json:"tmdb_id,omitempty"`
+	TvdbId       string                 `protobuf:"bytes,7,opt,name=tvdb_id,json=tvdbId,proto3" json:"tvdb_id,omitempty"`
+	Overview     string                 `protobuf:"bytes,8,opt,name=overview,proto3" json:"overview,omitempty"`
+	Genres       []string               `protobuf:"bytes,9,rep,name=genres,proto3" json:"genres,omitempty"`
+	PosterPath   string                 `protobuf:"bytes,10,opt,name=poster_path,json=posterPath,proto3" json:"poster_path,omitempty"`
+	BackdropPath string                 `protobuf:"bytes,11,opt,name=backdrop_path,json=backdropPath,proto3" json:"backdrop_path,omitempty"`
+	VirtualUri   string                 `protobuf:"bytes,12,opt,name=virtual_uri,json=virtualUri,proto3" json:"virtual_uri,omitempty"`
+	Episodes     []*VirtualEpisode      `protobuf:"bytes,13,rep,name=episodes,proto3" json:"episodes,omitempty"`
+	// Canonical catalog runtime. Playback may use a verified source duration
+	// for the active session without overwriting this value.
+	RuntimeMinutes int32 `protobuf:"varint,14,opt,name=runtime_minutes,json=runtimeMinutes,proto3" json:"runtime_minutes,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *UpsertVirtualMediaRequest) Reset() {
@@ -160,6 +163,13 @@ func (x *UpsertVirtualMediaRequest) GetEpisodes() []*VirtualEpisode {
 		return x.Episodes
 	}
 	return nil
+}
+
+func (x *UpsertVirtualMediaRequest) GetRuntimeMinutes() int32 {
+	if x != nil {
+		return x.RuntimeMinutes
+	}
+	return 0
 }
 
 type VirtualEpisode struct {
@@ -2282,7 +2292,7 @@ var File_silo_plugin_v1_runtime_host_proto protoreflect.FileDescriptor
 
 const file_silo_plugin_v1_runtime_host_proto_rawDesc = "" +
 	"\n" +
-	"!silo/plugin/v1/runtime_host.proto\x12\x0esilo.plugin.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bsilo/plugin/v1/common.proto\"\xa5\x03\n" +
+	"!silo/plugin/v1/runtime_host.proto\x12\x0esilo.plugin.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bsilo/plugin/v1/common.proto\"\xce\x03\n" +
 	"\x19UpsertVirtualMediaRequest\x12\x1d\n" +
 	"\n" +
 	"library_id\x18\x01 \x01(\tR\tlibraryId\x12\x1d\n" +
@@ -2301,7 +2311,8 @@ const file_silo_plugin_v1_runtime_host_proto_rawDesc = "" +
 	"\rbackdrop_path\x18\v \x01(\tR\fbackdropPath\x12\x1f\n" +
 	"\vvirtual_uri\x18\f \x01(\tR\n" +
 	"virtualUri\x12:\n" +
-	"\bepisodes\x18\r \x03(\v2\x1e.silo.plugin.v1.VirtualEpisodeR\bepisodes\"\x9b\x02\n" +
+	"\bepisodes\x18\r \x03(\v2\x1e.silo.plugin.v1.VirtualEpisodeR\bepisodes\x12'\n" +
+	"\x0fruntime_minutes\x18\x0e \x01(\x05R\x0eruntimeMinutes\"\x9b\x02\n" +
 	"\x0eVirtualEpisode\x12#\n" +
 	"\rseason_number\x18\x01 \x01(\x05R\fseasonNumber\x12%\n" +
 	"\x0eepisode_number\x18\x02 \x01(\x05R\repisodeNumber\x12\x14\n" +
