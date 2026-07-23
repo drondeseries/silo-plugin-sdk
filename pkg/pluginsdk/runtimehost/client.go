@@ -43,6 +43,7 @@ type VirtualEpisode struct {
 	RuntimeMinutes int
 	StillPath      string
 	VirtualURI     string
+	Variants       []VirtualMediaVariant
 }
 
 type VirtualMediaRequest struct {
@@ -60,6 +61,18 @@ type VirtualMediaRequest struct {
 	VirtualURI     string
 	RuntimeMinutes int
 	Episodes       []VirtualEpisode
+	Variants       []VirtualMediaVariant
+}
+
+type VirtualMediaVariant struct {
+	VirtualURI     string
+	Label          string
+	Resolution     string
+	CodecVideo     string
+	CodecAudio     string
+	HDR            string
+	Bitrate        int
+	RuntimeMinutes int
 }
 
 type VirtualMediaResult struct {
@@ -82,17 +95,41 @@ func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest
 	}
 	episodes := make([]*pluginv1.VirtualEpisode, 0, len(req.Episodes))
 	for _, episode := range req.Episodes {
+		var epVariants []*pluginv1.VirtualMediaVariant
+		if len(episode.Variants) > 0 {
+			epVariants = make([]*pluginv1.VirtualMediaVariant, 0, len(episode.Variants))
+			for _, v := range episode.Variants {
+				epVariants = append(epVariants, &pluginv1.VirtualMediaVariant{
+					VirtualUri: v.VirtualURI, Label: v.Label, Resolution: v.Resolution,
+					CodecVideo: v.CodecVideo, CodecAudio: v.CodecAudio, Hdr: v.HDR,
+					Bitrate: int32(v.Bitrate), RuntimeMinutes: int32(v.RuntimeMinutes),
+				})
+			}
+		}
 		episodes = append(episodes, &pluginv1.VirtualEpisode{
 			SeasonNumber: int32(episode.SeasonNumber), EpisodeNumber: int32(episode.EpisodeNumber),
 			Title: episode.Title, Overview: episode.Overview, AirDateUnix: episode.AirDate.Unix(),
 			RuntimeMinutes: int32(episode.RuntimeMinutes), StillPath: episode.StillPath, VirtualUri: episode.VirtualURI,
+			Variants: epVariants,
 		})
+	}
+	var reqVariants []*pluginv1.VirtualMediaVariant
+	if len(req.Variants) > 0 {
+		reqVariants = make([]*pluginv1.VirtualMediaVariant, 0, len(req.Variants))
+		for _, v := range req.Variants {
+			reqVariants = append(reqVariants, &pluginv1.VirtualMediaVariant{
+				VirtualUri: v.VirtualURI, Label: v.Label, Resolution: v.Resolution,
+				CodecVideo: v.CodecVideo, CodecAudio: v.CodecAudio, Hdr: v.HDR,
+				Bitrate: int32(v.Bitrate), RuntimeMinutes: int32(v.RuntimeMinutes),
+			})
+		}
 	}
 	resp, err := c.rpc.UpsertVirtualMedia(ctx, &pluginv1.UpsertVirtualMediaRequest{
 		LibraryId: req.LibraryID, MediaType: req.MediaType, Title: req.Title, Year: int32(req.Year),
 		ImdbId: req.IMDbID, TmdbId: req.TMDBID, TvdbId: req.TVDBID, Overview: req.Overview,
 		Genres: req.Genres, PosterPath: req.PosterPath, BackdropPath: req.BackdropPath,
 		VirtualUri: req.VirtualURI, RuntimeMinutes: int32(req.RuntimeMinutes), Episodes: episodes,
+		Variants: reqVariants,
 	})
 	if err != nil {
 		return nil, err

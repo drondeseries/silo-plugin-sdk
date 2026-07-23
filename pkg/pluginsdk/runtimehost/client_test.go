@@ -39,6 +39,8 @@ type fakeServer struct {
 	hostInfoResp         *pluginv1.GetHostInfoResponse
 	callHTTPReq          *pluginv1.CallPluginHTTPRequest
 	callHTTPResp         *pluginv1.CallPluginHTTPResponse
+	upsertVMReq          *pluginv1.UpsertVirtualMediaRequest
+	upsertVMResp         *pluginv1.UpsertVirtualMediaResponse
 }
 
 func (f *fakeServer) CheckMediaPresence(_ context.Context, req *pluginv1.CheckMediaPresenceRequest) (*pluginv1.CheckMediaPresenceResponse, error) {
@@ -129,6 +131,14 @@ func (f *fakeServer) CallPluginHTTP(_ context.Context, r *pluginv1.CallPluginHTT
 		return f.callHTTPResp, nil
 	}
 	return &pluginv1.CallPluginHTTPResponse{StatusCode: 204}, nil
+}
+
+func (f *fakeServer) UpsertVirtualMedia(_ context.Context, r *pluginv1.UpsertVirtualMediaRequest) (*pluginv1.UpsertVirtualMediaResponse, error) {
+	f.upsertVMReq = r
+	if f.upsertVMResp != nil {
+		return f.upsertVMResp, nil
+	}
+	return &pluginv1.UpsertVirtualMediaResponse{MediaId: "m-1", LibraryId: r.GetLibraryId()}, nil
 }
 
 func dial(t *testing.T, srv *fakeServer) *grpc.ClientConn {
@@ -541,3 +551,53 @@ func TestGetCatalogStats_MapsResponse(t *testing.T) {
 		t.Fatalf("bad stats: %+v", got)
 	}
 }
+
+func TestUpsertVirtualMedia_MapsVariants(t *testing.T) {
+	srv := &fakeServer{}
+	conn := dial(t, srv)
+	c := runtimehost.NewClient(conn)
+
+	req := runtimehost.VirtualMediaRequest{
+		LibraryID:  "lib-1",
+		MediaType:  "movie",
+		Title:      "The Matrix",
+		VirtualURI: "plugin://test/1",
+		Variants: []runtimehost.VirtualMediaVariant{
+			{VirtualURI: "plugin://test/1/1080p", Label: "1080p", Resolution: "1080p", CodecVideo: "h264"},
+			{VirtualURI: "plugin://test/1/4k", Label: "4K", Resolution: "4k", HDR: "hdr10"},
+		},
+		Episodes: []runtimehost.VirtualEpisode{
+			{
+				SeasonNumber: 1, EpisodeNumber: 1, Title: "Pilot", VirtualURI: "plugin://test/s1e1",
+				Variants: []runtimehost.VirtualMediaVariant{
+					{VirtualURI: "plugin://test/s1e1/1080p", Label: "1080p", Resolution: "1080p"},
+				},
+			},
+		},
+	}
+	_, err := c.UpsertVirtualMedia(context.Background(), req)
+	if err != nil {
+		t.Fatalf("UpsertVirtualMedia: %v", err)
+	}
+	
+	if len(srv.upsertVMReq.GetVariants()) != 2 {
+		t.Fatalf("expected 2 req variants, got %d", len(srv.upsertVMReq.GetVariants()))
+	}
+	if srv.upsertVMReq.GetVariants()[0].GetVirtualUri() != "plugin://test/1/1080p" {
+		t.Errorf("req variant 0 uri mismatch: %v", srv.upsertVMReq.GetVariants()[0].GetVirtualUri())
+	}
+	if srv.upsertVMReq.GetVariants()[1].GetHdr() != "hdr10" {
+		t.Errorf("req variant 1 hdr mismatch: %v", srv.upsertVMReq.GetVariants()[1].GetHdr())
+	}
+
+	if len(srv.upsertVMReq.GetEpisodes()) != 1 {
+		t.Fatalf("expected 1 episode, got %d", len(srv.upsertVMReq.GetEpisodes()))
+	}
+	if len(srv.upsertVMReq.GetEpisodes()[0].GetVariants()) != 1 {
+		t.Fatalf("expected 1 episode variant, got %d", len(srv.upsertVMReq.GetEpisodes()[0].GetVariants()))
+	}
+	if srv.upsertVMReq.GetEpisodes()[0].GetVariants()[0].GetVirtualUri() != "plugin://test/s1e1/1080p" {
+		t.Errorf("ep variant 0 uri mismatch: %v", srv.upsertVMReq.GetEpisodes()[0].GetVariants()[0].GetVirtualUri())
+	}
+}
+

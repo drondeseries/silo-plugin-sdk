@@ -88,6 +88,7 @@ message UpsertVirtualMediaRequest {
   // Canonical catalog runtime. Playback may use a verified source duration
   // for the active session without overwriting this value.
   int32 runtime_minutes = 14;
+  repeated VirtualMediaVariant variants = 15;
 }
 
 message VirtualEpisode {
@@ -99,6 +100,18 @@ message VirtualEpisode {
   int32 runtime_minutes = 6;
   string still_path = 7;
   string virtual_uri = 8;
+  repeated VirtualMediaVariant variants = 9;
+}
+
+message VirtualMediaVariant {
+  string virtual_uri = 1;
+  string label = 2;
+  string resolution = 3;
+  string codec_video = 4;
+  string codec_audio = 5;
+  string hdr = 6;
+  int32 bitrate = 7;
+  int32 runtime_minutes = 8;
 }
 
 message UpsertVirtualMediaResponse {
