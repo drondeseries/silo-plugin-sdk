@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -32,6 +33,121 @@ type CallPluginHTTPResponse struct {
 	StatusCode int
 	Headers    map[string]string
 	Body       []byte
+}
+
+type VirtualEpisode struct {
+	SeasonNumber   int
+	EpisodeNumber  int
+	Title          string
+	Overview       string
+	AirDate        time.Time
+	RuntimeMinutes int
+	StillPath      string
+	VirtualURI     string
+	Variants       []VirtualMediaVariant
+}
+
+type VirtualMediaRequest struct {
+	LibraryID      string
+	MediaType      string
+	Title          string
+	Year           int
+	IMDbID         string
+	TMDBID         string
+	TVDBID         string
+	Overview       string
+	Genres         []string
+	PosterPath     string
+	BackdropPath   string
+	VirtualURI     string
+	RuntimeMinutes int
+	SourceKey      string
+	Episodes       []VirtualEpisode
+	Variants       []VirtualMediaVariant
+}
+
+type VirtualMediaVariant struct {
+	VirtualURI     string
+	Label          string
+	Resolution     string
+	CodecVideo     string
+	CodecAudio     string
+	HDR            string
+	Bitrate        int
+	RuntimeMinutes int
+}
+
+type VirtualMediaResult struct {
+	MediaID          string
+	LibraryID        string
+	EpisodesUpserted int
+}
+
+// UpsertVirtualMedia registers plugin-owned virtual media through the host's
+// catalog service. Plugins never need database credentials or schema access.
+func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest) (*VirtualMediaResult, error) {
+	if req.LibraryID == "" {
+		return nil, fmt.Errorf("runtimehost: library id is required")
+	}
+	if req.MediaType != "movie" && req.MediaType != "series" {
+		return nil, fmt.Errorf("runtimehost: media type must be movie or series")
+	}
+	if req.Title == "" || req.VirtualURI == "" {
+		return nil, fmt.Errorf("runtimehost: title and virtual URI are required")
+	}
+	episodes := make([]*pluginv1.VirtualEpisode, 0, len(req.Episodes))
+	for _, episode := range req.Episodes {
+		var epVariants []*pluginv1.VirtualMediaVariant
+		if len(episode.Variants) > 0 {
+			epVariants = make([]*pluginv1.VirtualMediaVariant, 0, len(episode.Variants))
+			for _, v := range episode.Variants {
+				epVariants = append(epVariants, &pluginv1.VirtualMediaVariant{
+					VirtualUri: v.VirtualURI, Label: v.Label, Resolution: v.Resolution,
+					CodecVideo: v.CodecVideo, CodecAudio: v.CodecAudio, Hdr: v.HDR,
+					Bitrate: int32(v.Bitrate), RuntimeMinutes: int32(v.RuntimeMinutes),
+				})
+			}
+		}
+		episodes = append(episodes, &pluginv1.VirtualEpisode{
+			SeasonNumber: int32(episode.SeasonNumber), EpisodeNumber: int32(episode.EpisodeNumber),
+			Title: episode.Title, Overview: episode.Overview, AirDateUnix: episode.AirDate.Unix(),
+			RuntimeMinutes: int32(episode.RuntimeMinutes), StillPath: episode.StillPath, VirtualUri: episode.VirtualURI,
+			Variants: epVariants,
+		})
+	}
+	var reqVariants []*pluginv1.VirtualMediaVariant
+	if len(req.Variants) > 0 {
+		reqVariants = make([]*pluginv1.VirtualMediaVariant, 0, len(req.Variants))
+		for _, v := range req.Variants {
+			reqVariants = append(reqVariants, &pluginv1.VirtualMediaVariant{
+				VirtualUri: v.VirtualURI, Label: v.Label, Resolution: v.Resolution,
+				CodecVideo: v.CodecVideo, CodecAudio: v.CodecAudio, Hdr: v.HDR,
+				Bitrate: int32(v.Bitrate), RuntimeMinutes: int32(v.RuntimeMinutes),
+			})
+		}
+	}
+	resp, err := c.rpc.UpsertVirtualMedia(ctx, &pluginv1.UpsertVirtualMediaRequest{
+		LibraryId: req.LibraryID, MediaType: req.MediaType, Title: req.Title, Year: int32(req.Year),
+		ImdbId: req.IMDbID, TmdbId: req.TMDBID, TvdbId: req.TVDBID, Overview: req.Overview,
+		Genres: req.Genres, PosterPath: req.PosterPath, BackdropPath: req.BackdropPath,
+		VirtualUri: req.VirtualURI, RuntimeMinutes: int32(req.RuntimeMinutes), Episodes: episodes,
+		Variants: reqVariants, SourceKey: req.SourceKey,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &VirtualMediaResult{MediaID: resp.GetMediaId(), LibraryID: resp.GetLibraryId(), EpisodesUpserted: int(resp.GetEpisodesUpserted())}, nil
+}
+
+// ReconcileVirtualMedia removes virtual items owned by this plugin source
+// that are absent from keepMediaIDs. Library IDs optionally narrow the scope.
+func (c *Client) ReconcileVirtualMedia(ctx context.Context, sourceKey string, keepMediaIDs, libraryIDs []string) (*pluginv1.ReconcileVirtualMediaResponse, error) {
+	if strings.TrimSpace(sourceKey) == "" {
+		return nil, fmt.Errorf("runtimehost: source key is required")
+	}
+	return c.rpc.ReconcileVirtualMedia(ctx, &pluginv1.ReconcileVirtualMediaRequest{
+		SourceKey: sourceKey, KeepMediaIds: keepMediaIDs, LibraryIds: libraryIDs,
+	})
 }
 
 func (c *Client) CallPluginHTTP(ctx context.Context, req CallPluginHTTPRequest) (*CallPluginHTTPResponse, error) {
