@@ -67,14 +67,20 @@ type VirtualMediaRequest struct {
 }
 
 type VirtualMediaVariant struct {
-	VirtualURI     string
-	Label          string
-	Resolution     string
-	CodecVideo     string
-	CodecAudio     string
-	HDR            string
-	Bitrate        int
-	RuntimeMinutes int
+	VirtualURI        string
+	Label             string
+	Resolution        string
+	CodecVideo        string
+	CodecAudio        string
+	HDR               string
+	Bitrate           int
+	RuntimeMinutes    int
+	FileSize          int64
+	Container         string
+	SourceType        string
+	AudioLanguages    []string
+	SubtitleLanguages []string
+	Availability      string
 }
 
 type VirtualMediaResult struct {
@@ -105,6 +111,8 @@ func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest
 					VirtualUri: v.VirtualURI, Label: v.Label, Resolution: v.Resolution,
 					CodecVideo: v.CodecVideo, CodecAudio: v.CodecAudio, Hdr: v.HDR,
 					Bitrate: int32(v.Bitrate), RuntimeMinutes: int32(v.RuntimeMinutes),
+					FileSize: v.FileSize, Container: v.Container, SourceType: v.SourceType,
+					AudioLanguages: v.AudioLanguages, SubtitleLanguages: v.SubtitleLanguages, Availability: v.Availability,
 				})
 			}
 		}
@@ -123,6 +131,8 @@ func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest
 				VirtualUri: v.VirtualURI, Label: v.Label, Resolution: v.Resolution,
 				CodecVideo: v.CodecVideo, CodecAudio: v.CodecAudio, Hdr: v.HDR,
 				Bitrate: int32(v.Bitrate), RuntimeMinutes: int32(v.RuntimeMinutes),
+				FileSize: v.FileSize, Container: v.Container, SourceType: v.SourceType,
+				AudioLanguages: v.AudioLanguages, SubtitleLanguages: v.SubtitleLanguages, Availability: v.Availability,
 			})
 		}
 	}

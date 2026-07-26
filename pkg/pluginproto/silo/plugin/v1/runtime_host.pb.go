@@ -409,17 +409,23 @@ func (x *VirtualEpisode) GetVariants() []*VirtualMediaVariant {
 }
 
 type VirtualMediaVariant struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	VirtualUri     string                 `protobuf:"bytes,1,opt,name=virtual_uri,json=virtualUri,proto3" json:"virtual_uri,omitempty"`
-	Label          string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
-	Resolution     string                 `protobuf:"bytes,3,opt,name=resolution,proto3" json:"resolution,omitempty"`
-	CodecVideo     string                 `protobuf:"bytes,4,opt,name=codec_video,json=codecVideo,proto3" json:"codec_video,omitempty"`
-	CodecAudio     string                 `protobuf:"bytes,5,opt,name=codec_audio,json=codecAudio,proto3" json:"codec_audio,omitempty"`
-	Hdr            string                 `protobuf:"bytes,6,opt,name=hdr,proto3" json:"hdr,omitempty"`
-	Bitrate        int32                  `protobuf:"varint,7,opt,name=bitrate,proto3" json:"bitrate,omitempty"`
-	RuntimeMinutes int32                  `protobuf:"varint,8,opt,name=runtime_minutes,json=runtimeMinutes,proto3" json:"runtime_minutes,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	VirtualUri        string                 `protobuf:"bytes,1,opt,name=virtual_uri,json=virtualUri,proto3" json:"virtual_uri,omitempty"`
+	Label             string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	Resolution        string                 `protobuf:"bytes,3,opt,name=resolution,proto3" json:"resolution,omitempty"`
+	CodecVideo        string                 `protobuf:"bytes,4,opt,name=codec_video,json=codecVideo,proto3" json:"codec_video,omitempty"`
+	CodecAudio        string                 `protobuf:"bytes,5,opt,name=codec_audio,json=codecAudio,proto3" json:"codec_audio,omitempty"`
+	Hdr               string                 `protobuf:"bytes,6,opt,name=hdr,proto3" json:"hdr,omitempty"`
+	Bitrate           int32                  `protobuf:"varint,7,opt,name=bitrate,proto3" json:"bitrate,omitempty"`
+	RuntimeMinutes    int32                  `protobuf:"varint,8,opt,name=runtime_minutes,json=runtimeMinutes,proto3" json:"runtime_minutes,omitempty"`
+	FileSize          int64                  `protobuf:"varint,9,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	Container         string                 `protobuf:"bytes,10,opt,name=container,proto3" json:"container,omitempty"`
+	SourceType        string                 `protobuf:"bytes,11,opt,name=source_type,json=sourceType,proto3" json:"source_type,omitempty"`
+	AudioLanguages    []string               `protobuf:"bytes,12,rep,name=audio_languages,json=audioLanguages,proto3" json:"audio_languages,omitempty"`
+	SubtitleLanguages []string               `protobuf:"bytes,13,rep,name=subtitle_languages,json=subtitleLanguages,proto3" json:"subtitle_languages,omitempty"`
+	Availability      string                 `protobuf:"bytes,14,opt,name=availability,proto3" json:"availability,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *VirtualMediaVariant) Reset() {
@@ -506,6 +512,48 @@ func (x *VirtualMediaVariant) GetRuntimeMinutes() int32 {
 		return x.RuntimeMinutes
 	}
 	return 0
+}
+
+func (x *VirtualMediaVariant) GetFileSize() int64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+func (x *VirtualMediaVariant) GetContainer() string {
+	if x != nil {
+		return x.Container
+	}
+	return ""
+}
+
+func (x *VirtualMediaVariant) GetSourceType() string {
+	if x != nil {
+		return x.SourceType
+	}
+	return ""
+}
+
+func (x *VirtualMediaVariant) GetAudioLanguages() []string {
+	if x != nil {
+		return x.AudioLanguages
+	}
+	return nil
+}
+
+func (x *VirtualMediaVariant) GetSubtitleLanguages() []string {
+	if x != nil {
+		return x.SubtitleLanguages
+	}
+	return nil
+}
+
+func (x *VirtualMediaVariant) GetAvailability() string {
+	if x != nil {
+		return x.Availability
+	}
+	return ""
 }
 
 type UpsertVirtualMediaResponse struct {
@@ -2572,7 +2620,7 @@ const file_silo_plugin_v1_runtime_host_proto_rawDesc = "" +
 	"still_path\x18\a \x01(\tR\tstillPath\x12\x1f\n" +
 	"\vvirtual_uri\x18\b \x01(\tR\n" +
 	"virtualUri\x12?\n" +
-	"\bvariants\x18\t \x03(\v2#.silo.plugin.v1.VirtualMediaVariantR\bvariants\"\x83\x02\n" +
+	"\bvariants\x18\t \x03(\v2#.silo.plugin.v1.VirtualMediaVariantR\bvariants\"\xdb\x03\n" +
 	"\x13VirtualMediaVariant\x12\x1f\n" +
 	"\vvirtual_uri\x18\x01 \x01(\tR\n" +
 	"virtualUri\x12\x14\n" +
@@ -2586,7 +2634,15 @@ const file_silo_plugin_v1_runtime_host_proto_rawDesc = "" +
 	"codecAudio\x12\x10\n" +
 	"\x03hdr\x18\x06 \x01(\tR\x03hdr\x12\x18\n" +
 	"\abitrate\x18\a \x01(\x05R\abitrate\x12'\n" +
-	"\x0fruntime_minutes\x18\b \x01(\x05R\x0eruntimeMinutes\"\x83\x01\n" +
+	"\x0fruntime_minutes\x18\b \x01(\x05R\x0eruntimeMinutes\x12\x1b\n" +
+	"\tfile_size\x18\t \x01(\x03R\bfileSize\x12\x1c\n" +
+	"\tcontainer\x18\n" +
+	" \x01(\tR\tcontainer\x12\x1f\n" +
+	"\vsource_type\x18\v \x01(\tR\n" +
+	"sourceType\x12'\n" +
+	"\x0faudio_languages\x18\f \x03(\tR\x0eaudioLanguages\x12-\n" +
+	"\x12subtitle_languages\x18\r \x03(\tR\x11subtitleLanguages\x12\"\n" +
+	"\favailability\x18\x0e \x01(\tR\favailability\"\x83\x01\n" +
 	"\x1aUpsertVirtualMediaResponse\x12\x19\n" +
 	"\bmedia_id\x18\x01 \x01(\tR\amediaId\x12\x1d\n" +
 	"\n" +
