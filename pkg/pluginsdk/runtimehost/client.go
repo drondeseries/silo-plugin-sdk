@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -60,6 +61,7 @@ type VirtualMediaRequest struct {
 	BackdropPath   string
 	VirtualURI     string
 	RuntimeMinutes int
+	SourceKey      string
 	Episodes       []VirtualEpisode
 	Variants       []VirtualMediaVariant
 }
@@ -129,12 +131,23 @@ func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest
 		ImdbId: req.IMDbID, TmdbId: req.TMDBID, TvdbId: req.TVDBID, Overview: req.Overview,
 		Genres: req.Genres, PosterPath: req.PosterPath, BackdropPath: req.BackdropPath,
 		VirtualUri: req.VirtualURI, RuntimeMinutes: int32(req.RuntimeMinutes), Episodes: episodes,
-		Variants: reqVariants,
+		Variants: reqVariants, SourceKey: req.SourceKey,
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &VirtualMediaResult{MediaID: resp.GetMediaId(), LibraryID: resp.GetLibraryId(), EpisodesUpserted: int(resp.GetEpisodesUpserted())}, nil
+}
+
+// ReconcileVirtualMedia removes virtual items owned by this plugin source
+// that are absent from keepMediaIDs. Library IDs optionally narrow the scope.
+func (c *Client) ReconcileVirtualMedia(ctx context.Context, sourceKey string, keepMediaIDs, libraryIDs []string) (*pluginv1.ReconcileVirtualMediaResponse, error) {
+	if strings.TrimSpace(sourceKey) == "" {
+		return nil, fmt.Errorf("runtimehost: source key is required")
+	}
+	return c.rpc.ReconcileVirtualMedia(ctx, &pluginv1.ReconcileVirtualMediaRequest{
+		SourceKey: sourceKey, KeepMediaIds: keepMediaIDs, LibraryIds: libraryIDs,
+	})
 }
 
 func (c *Client) CallPluginHTTP(ctx context.Context, req CallPluginHTTPRequest) (*CallPluginHTTPResponse, error) {
