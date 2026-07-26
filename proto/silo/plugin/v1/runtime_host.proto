@@ -128,6 +128,12 @@ message VirtualMediaVariant {
   string hdr = 6;
   int32 bitrate = 7;
   int32 runtime_minutes = 8;
+  int64 file_size = 9;
+  string container = 10;
+  string source_type = 11;
+  repeated string audio_languages = 12;
+  repeated string subtitle_languages = 13;
+  string availability = 14;
 }
 
 message UpsertVirtualMediaResponse {
