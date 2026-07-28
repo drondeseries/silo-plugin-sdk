@@ -23,18 +23,19 @@ const (
 )
 
 type CapabilityServers struct {
-	Runtime           pluginv1.RuntimeServer
-	MetadataProvider  pluginv1.MetadataProviderServer
-	ImageResolver     pluginv1.ImageResolverServer
-	MarkerProvider    pluginv1.MarkerProviderServer
-	MediaAnalyzer     pluginv1.MediaAnalyzerServer
-	ScheduledTask     pluginv1.ScheduledTaskServer
-	ScanSource        pluginv1.ScanSourceServer
-	RequestRouter     pluginv1.RequestRouterServer
-	EventConsumer     pluginv1.EventConsumerServer
-	AuthProvider      pluginv1.AuthProviderServer
-	HttpRoutes        pluginv1.HttpRoutesServer
-	WatchSyncProvider pluginv1.WatchSyncProviderServer
+	Runtime               pluginv1.RuntimeServer
+	MetadataProvider      pluginv1.MetadataProviderServer
+	ImageResolver         pluginv1.ImageResolverServer
+	MarkerProvider        pluginv1.MarkerProviderServer
+	MediaAnalyzer         pluginv1.MediaAnalyzerServer
+	ScheduledTask         pluginv1.ScheduledTaskServer
+	ScanSource            pluginv1.ScanSourceServer
+	RequestRouter         pluginv1.RequestRouterServer
+	EventConsumer         pluginv1.EventConsumerServer
+	AuthProvider          pluginv1.AuthProviderServer
+	HttpRoutes            pluginv1.HttpRoutesServer
+	WatchSyncProvider     pluginv1.WatchSyncProviderServer
+	VirtualStreamProvider pluginv1.VirtualStreamProviderServer
 }
 
 // Client wraps the gRPC connection to a plugin and provides typed accessors
@@ -155,6 +156,10 @@ func (c *Client) WatchSyncDeviceAuthorization() pluginv1.WatchSyncDeviceAuthoriz
 	return pluginv1.NewWatchSyncDeviceAuthorizationServiceClient(c.conn)
 }
 
+func (c *Client) VirtualStreamProvider() pluginv1.VirtualStreamProviderClient {
+	return pluginv1.NewVirtualStreamProviderClient(c.conn)
+}
+
 type GRPCPlugin struct {
 	plugin.Plugin
 	Servers CapabilityServers
@@ -215,6 +220,9 @@ func (p *GRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, server *grpc.Server) 
 	}
 	if p.Servers.WatchSyncProvider != nil {
 		pluginv1.RegisterWatchSyncProviderServer(server, p.Servers.WatchSyncProvider)
+	}
+	if p.Servers.VirtualStreamProvider != nil {
+		pluginv1.RegisterVirtualStreamProviderServer(server, p.Servers.VirtualStreamProvider)
 	}
 	return nil
 }
