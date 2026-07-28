@@ -113,6 +113,9 @@ func Validate(manifest *pluginv1.PluginManifest) error {
 		if err := validateWatchSyncCapability(capability); err != nil {
 			return err
 		}
+		if err := validateVirtualStreamCapability(capability); err != nil {
+			return err
+		}
 	}
 	for _, schema := range manifest.GlobalConfigSchema {
 		if err := validateConfigSchema(schema); err != nil {
@@ -130,6 +133,17 @@ func Validate(manifest *pluginv1.PluginManifest) error {
 				return fmt.Errorf("capability %q config schema: %w", c.GetId(), err)
 			}
 		}
+	}
+	return nil
+}
+
+func validateVirtualStreamCapability(descriptor *pluginv1.CapabilityDescriptor) error {
+	virtualStream := descriptor.GetVirtualStreamProvider()
+	if descriptor.GetType() != capability.VirtualStreamProvider {
+		if virtualStream != nil {
+			return fmt.Errorf("plugin capability %q: virtual_stream_provider descriptor requires type %q", descriptor.GetId(), capability.VirtualStreamProvider)
+		}
+		return nil
 	}
 	return nil
 }

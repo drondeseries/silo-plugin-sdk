@@ -29,6 +29,7 @@ The SDK ships protobuf contracts for every capability the host understands:
 - `request_router.v1`
 - `scan_source.v1`
 - `watch_sync_provider.v1`
+- `virtual_stream_provider.v1`
 - `audiobook_backend.v1`
 - `ebook_backend.v1`
 
@@ -170,6 +171,10 @@ source rewrite rules before enqueueing scans.
 The host resolves the configured upstream connection and passes it to
 `PollChanges` for each poll. Plugins should treat request values such as API
 keys as transient secrets and avoid logging them without redaction.
+
+## Virtual stream providers
+
+The `virtual_stream_provider.v1` capability lets plugins resolve provider-neutral stream candidates for just-in-time playback. Candidates convey playback metadata including temporary stream URIs, expiration timestamps, resolution, codecs, HDR/Dolby Vision flags, bitrate, file size, audio/subtitle languages, availability state, and error details. See [`docs/virtual-stream.md`](docs/virtual-stream.md) for full contract details.
 
 ## Self-describing binaries
 

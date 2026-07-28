@@ -49,3 +49,19 @@ func TestImageResolverIsKnownType(t *testing.T) {
 		t.Fatalf("ImageResolver (%q) missing from KnownTypes %v", ImageResolver, KnownTypes)
 	}
 }
+
+func TestVirtualStreamProviderIsKnownType(t *testing.T) {
+	if VirtualStreamProvider != "virtual_stream_provider.v1" {
+		t.Fatalf("VirtualStreamProvider const = %q, want %q", VirtualStreamProvider, "virtual_stream_provider.v1")
+	}
+	found := false
+	for _, k := range KnownTypes {
+		if k == VirtualStreamProvider {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("VirtualStreamProvider (%q) missing from KnownTypes %v", VirtualStreamProvider, KnownTypes)
+	}
+}

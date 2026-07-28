@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package silo.plugin.v1;
+
+option go_package = "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1;pluginv1";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// VirtualStreamProvider defines the capability for resolving provider-neutral,
+// just-in-time virtual stream results.
+service VirtualStreamProvider {
+  // ResolveVirtualStream resolves candidate streams for a given media request.
+  rpc ResolveVirtualStream(ResolveVirtualStreamRequest) returns (ResolveVirtualStreamResponse);
+}
+
+// VirtualStreamProviderDescriptor advertises a plugin's virtual stream provider
+// features and media format support in its manifest.
+message VirtualStreamProviderDescriptor {
+  // Media types supported by this virtual stream provider (e.g. "movie", "episode").
+  repeated string supported_media_types = 1;
+  // Container formats supported (e.g. "mkv", "mp4", "ts", "hls").
+  repeated string supported_containers = 2;
+  // Indicates whether the provider supports dynamic just-in-time resolution.
+  bool supports_just_in_time_resolution = 3;
+  // Indicates whether the provider can return multiple stream candidates.
+  bool supports_multiple_candidates = 4;
+}
+
+// VirtualStreamResolution describes the display resolution and framerate of a stream.
+message VirtualStreamResolution {
+  int32 width = 1;
+  int32 height = 2;
+  // Standard resolution label (e.g. "1080p", "2160p", "4k", "720p").
+  string label = 3;
+  // Frame rate in frames per second (e.g. 23.976, 60.0).
+  double frame_rate = 4;
+}
+
+// VirtualStreamHDR describes High Dynamic Range and Dolby Vision characteristics.
+message VirtualStreamHDR {
+  bool is_hdr = 1;
+  // Primary HDR format (e.g. "HDR10", "HDR10+", "HLG", "Dolby Vision").
+  string format = 2;
+  bool has_dolby_vision = 3;
+  // Dolby Vision profile string (e.g. "Profile 5", "Profile 8.1").
+  string dolby_vision_profile = 4;
+}
+
+// VirtualStreamAvailabilityState indicates the readiness state of a virtual stream.
+enum VirtualStreamAvailabilityState {
+  VIRTUAL_STREAM_AVAILABILITY_STATE_UNSPECIFIED = 0;
+  VIRTUAL_STREAM_AVAILABILITY_STATE_AVAILABLE = 1;
+  VIRTUAL_STREAM_AVAILABILITY_STATE_PENDING = 2;
+  VIRTUAL_STREAM_AVAILABILITY_STATE_UNRESOLVED = 3;
+  VIRTUAL_STREAM_AVAILABILITY_STATE_DEGRADED = 4;
+  VIRTUAL_STREAM_AVAILABILITY_STATE_UNAVAILABLE = 5;
+}
+
+// VirtualStreamAvailability describes stream readiness and progress metadata.
+message VirtualStreamAvailability {
+  VirtualStreamAvailabilityState state = 1;
+  // Operator or client safe description of the availability state.
+  string message = 2;
+  // Timestamp when the stream is expected to become available (for pending streams).
+  google.protobuf.Timestamp estimated_ready_at = 3;
+  // Progress percentage (0 to 100) for buffering, downloading, or processing streams.
+  int32 progress_percent = 4;
+}
+
+// VirtualStreamErrorCode identifies standard virtual stream fault categories.
+enum VirtualStreamErrorCode {
+  VIRTUAL_STREAM_ERROR_CODE_UNSPECIFIED = 0;
+  VIRTUAL_STREAM_ERROR_CODE_NOT_FOUND = 1;
+  VIRTUAL_STREAM_ERROR_CODE_TEMPORARY = 2;
+  VIRTUAL_STREAM_ERROR_CODE_EXPIRED = 3;
+  VIRTUAL_STREAM_ERROR_CODE_RATE_LIMITED = 4;
+  VIRTUAL_STREAM_ERROR_CODE_UNAUTHORIZED = 5;
+  VIRTUAL_STREAM_ERROR_CODE_PROVIDER_FAILURE = 6;
+  VIRTUAL_STREAM_ERROR_CODE_PERMANENT = 7;
+}
+
+// VirtualStreamError provides structured fault metadata for stream failures.
+message VirtualStreamError {
+  VirtualStreamErrorCode code = 1;
+  // Safe error message suitable for client display or logging.
+  string message = 2;
+  // Indicates whether the operation can be retried.
+  bool retryable = 3;
+  // Recommended delay before attempting a retry.
+  google.protobuf.Duration retry_after = 4;
+}
+
+// VirtualStreamCandidate represents one candidate stream available for just-in-time playback.
+message VirtualStreamCandidate {
+  // Unique candidate identifier.
+  string candidate_id = 1;
+  // Identifier of the stream provider or source plugin.
+  string provider_id = 2;
+  // Temporary URI for just-in-time stream playback.
+  string temporary_uri = 3;
+  // Expiration timestamp of the temporary URI or stream access.
+  google.protobuf.Timestamp expires_at = 4;
+  // Preference ranking (e.g. 1 = primary / highest preference).
+  int32 rank = 5;
+  // Video resolution metadata.
+  VirtualStreamResolution resolution = 6;
+  // Video codec identifier (e.g. "hevc", "h264", "av1", "vp9").
+  string video_codec = 7;
+  // Primary audio codec identifier (e.g. "aac", "ac3", "eac3", "truehd", "dts", "flac").
+  string audio_codec = 8;
+  // HDR and Dolby Vision metadata.
+  VirtualStreamHDR hdr = 9;
+  // Bitrate in bits per second (bps).
+  int64 bitrate = 10;
+  // Media file size in bytes.
+  int64 file_size_bytes = 11;
+  // Container format (e.g. "mkv", "mp4", "ts", "hls").
+  string container = 12;
+  // Available audio track languages (BCP 47 or ISO 639 codes).
+  repeated string audio_languages = 13;
+  // Available subtitle track languages (BCP 47 or ISO 639 codes).
+  repeated string subtitle_languages = 14;
+  // Candidate-specific availability metadata.
+  VirtualStreamAvailability availability = 15;
+  // Candidate-specific error metadata (when degraded or failed).
+  VirtualStreamError error = 16;
+  // Arbitrary provider-specific metadata.
+  google.protobuf.Struct metadata = 17;
+}
+
+// VirtualStreamResult contains the provider-neutral resolution outcome for just-in-time playback,
+// supporting multiple candidate streams, availability, and error metadata.
+message VirtualStreamResult {
+  // Unique resolution result identifier.
+  string result_id = 1;
+  // Primary provider identifier.
+  string provider_id = 2;
+  // Multiple candidate streams ordered by rank/preference.
+  repeated VirtualStreamCandidate candidates = 3;
+  // Overall stream resolution availability metadata.
+  VirtualStreamAvailability availability = 4;
+  // Overall stream resolution error metadata.
+  VirtualStreamError error = 5;
+  // Arbitrary provider or resolution metadata.
+  google.protobuf.Struct metadata = 6;
+}
+
+// ResolveVirtualStreamRequest is sent to resolve stream candidates for a media item.
+message ResolveVirtualStreamRequest {
+  string capability_id = 1;
+  // Media type (e.g. "movie", "episode", "track").
+  string media_type = 2;
+  string title = 3;
+  int32 year = 4;
+  map<string, string> external_ids = 5;
+  int32 season_number = 6;
+  int32 episode_number = 7;
+  google.protobuf.Struct metadata = 8;
+}
+
+// ResolveVirtualStreamResponse wraps the virtual stream resolution result.
+message ResolveVirtualStreamResponse {
+  VirtualStreamResult result = 1;
+}

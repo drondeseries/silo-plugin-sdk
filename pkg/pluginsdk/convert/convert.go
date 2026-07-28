@@ -75,6 +75,17 @@ func DecodeCapability(record CapabilityRecord) (*pluginv1.CapabilityDescriptor, 
 		}
 		descriptor.WatchSyncProvider = &typed
 	}
+	if virtualStream, ok := record.Metadata["virtual_stream_provider"]; ok {
+		data, err := json.Marshal(virtualStream)
+		if err != nil {
+			return nil, fmt.Errorf("encode virtual stream provider descriptor: %w", err)
+		}
+		var typed pluginv1.VirtualStreamProviderDescriptor
+		if err := protojson.Unmarshal(data, &typed); err != nil {
+			return nil, fmt.Errorf("decode virtual stream provider descriptor: %w", err)
+		}
+		descriptor.VirtualStreamProvider = &typed
+	}
 	if configSchema, ok := record.Metadata["config_schema"]; ok {
 		schemas, err := decodeConfigSchemas(configSchema)
 		if err != nil {
@@ -121,6 +132,17 @@ func capabilityMetadata(descriptor *pluginv1.CapabilityDescriptor) (map[string]a
 			return nil, fmt.Errorf("decode watch sync provider descriptor JSON: %w", err)
 		}
 		metadata["watch_sync_provider"] = value
+	}
+	if descriptor.GetVirtualStreamProvider() != nil {
+		data, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(descriptor.GetVirtualStreamProvider())
+		if err != nil {
+			return nil, fmt.Errorf("encode virtual stream provider descriptor: %w", err)
+		}
+		var value map[string]any
+		if err := json.Unmarshal(data, &value); err != nil {
+			return nil, fmt.Errorf("decode virtual stream provider descriptor JSON: %w", err)
+		}
+		metadata["virtual_stream_provider"] = value
 	}
 	if len(descriptor.GetConfigSchema()) > 0 {
 		schemas := make([]map[string]any, 0, len(descriptor.GetConfigSchema()))
