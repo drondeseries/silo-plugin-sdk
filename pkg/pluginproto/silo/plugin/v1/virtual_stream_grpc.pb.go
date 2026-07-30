@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	VirtualStreamProvider_ResolveVirtualStream_FullMethodName = "/silo.plugin.v1.VirtualStreamProvider/ResolveVirtualStream"
+	VirtualStreamProvider_ResolveVirtualStream_FullMethodName      = "/silo.plugin.v1.VirtualStreamProvider/ResolveVirtualStream"
+	VirtualStreamProvider_ListVirtualStreamProfiles_FullMethodName = "/silo.plugin.v1.VirtualStreamProvider/ListVirtualStreamProfiles"
 )
 
 // VirtualStreamProviderClient is the client API for VirtualStreamProvider service.
@@ -31,6 +32,9 @@ const (
 type VirtualStreamProviderClient interface {
 	// ResolveVirtualStream resolves candidate streams for a given media request.
 	ResolveVirtualStream(ctx context.Context, in *ResolveVirtualStreamRequest, opts ...grpc.CallOption) (*ResolveVirtualStreamResponse, error)
+	// ListVirtualStreamProfiles returns configuration-only placeholders without
+	// contacting an upstream stream provider.
+	ListVirtualStreamProfiles(ctx context.Context, in *ListVirtualStreamProfilesRequest, opts ...grpc.CallOption) (*ListVirtualStreamProfilesResponse, error)
 }
 
 type virtualStreamProviderClient struct {
@@ -51,6 +55,16 @@ func (c *virtualStreamProviderClient) ResolveVirtualStream(ctx context.Context, 
 	return out, nil
 }
 
+func (c *virtualStreamProviderClient) ListVirtualStreamProfiles(ctx context.Context, in *ListVirtualStreamProfilesRequest, opts ...grpc.CallOption) (*ListVirtualStreamProfilesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListVirtualStreamProfilesResponse)
+	err := c.cc.Invoke(ctx, VirtualStreamProvider_ListVirtualStreamProfiles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VirtualStreamProviderServer is the server API for VirtualStreamProvider service.
 // All implementations should embed UnimplementedVirtualStreamProviderServer
 // for forward compatibility.
@@ -60,6 +74,9 @@ func (c *virtualStreamProviderClient) ResolveVirtualStream(ctx context.Context, 
 type VirtualStreamProviderServer interface {
 	// ResolveVirtualStream resolves candidate streams for a given media request.
 	ResolveVirtualStream(context.Context, *ResolveVirtualStreamRequest) (*ResolveVirtualStreamResponse, error)
+	// ListVirtualStreamProfiles returns configuration-only placeholders without
+	// contacting an upstream stream provider.
+	ListVirtualStreamProfiles(context.Context, *ListVirtualStreamProfilesRequest) (*ListVirtualStreamProfilesResponse, error)
 }
 
 // UnimplementedVirtualStreamProviderServer should be embedded to have
@@ -71,6 +88,9 @@ type UnimplementedVirtualStreamProviderServer struct{}
 
 func (UnimplementedVirtualStreamProviderServer) ResolveVirtualStream(context.Context, *ResolveVirtualStreamRequest) (*ResolveVirtualStreamResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveVirtualStream not implemented")
+}
+func (UnimplementedVirtualStreamProviderServer) ListVirtualStreamProfiles(context.Context, *ListVirtualStreamProfilesRequest) (*ListVirtualStreamProfilesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListVirtualStreamProfiles not implemented")
 }
 func (UnimplementedVirtualStreamProviderServer) testEmbeddedByValue() {}
 
@@ -110,6 +130,24 @@ func _VirtualStreamProvider_ResolveVirtualStream_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VirtualStreamProvider_ListVirtualStreamProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListVirtualStreamProfilesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VirtualStreamProviderServer).ListVirtualStreamProfiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VirtualStreamProvider_ListVirtualStreamProfiles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VirtualStreamProviderServer).ListVirtualStreamProfiles(ctx, req.(*ListVirtualStreamProfilesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VirtualStreamProvider_ServiceDesc is the grpc.ServiceDesc for VirtualStreamProvider service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -120,6 +158,10 @@ var VirtualStreamProvider_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResolveVirtualStream",
 			Handler:    _VirtualStreamProvider_ResolveVirtualStream_Handler,
+		},
+		{
+			MethodName: "ListVirtualStreamProfiles",
+			Handler:    _VirtualStreamProvider_ListVirtualStreamProfiles_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

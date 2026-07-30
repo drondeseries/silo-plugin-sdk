@@ -13,6 +13,29 @@ import "google/protobuf/timestamp.proto";
 service VirtualStreamProvider {
   // ResolveVirtualStream resolves candidate streams for a given media request.
   rpc ResolveVirtualStream(ResolveVirtualStreamRequest) returns (ResolveVirtualStreamResponse);
+  // ListVirtualStreamProfiles returns configuration-only placeholders without
+  // contacting an upstream stream provider.
+  rpc ListVirtualStreamProfiles(ListVirtualStreamProfilesRequest) returns (ListVirtualStreamProfilesResponse);
+}
+
+message VirtualStreamProfile {
+  string label = 1;
+  string resolution = 2;
+  string video_codec = 3;
+  string audio_codec = 4;
+  string hdr_format = 5;
+  // When true, selecting this profile asks for the provider's complete ranked
+  // result set instead of applying a quality constraint.
+  bool all_results = 6;
+}
+
+message ListVirtualStreamProfilesRequest {
+  string capability_id = 1;
+  string media_type = 2;
+}
+
+message ListVirtualStreamProfilesResponse {
+  repeated VirtualStreamProfile profiles = 1;
 }
 
 // VirtualStreamProviderDescriptor advertises a plugin's virtual stream provider

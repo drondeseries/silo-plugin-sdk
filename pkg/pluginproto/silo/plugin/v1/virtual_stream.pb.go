@@ -148,6 +148,188 @@ func (VirtualStreamErrorCode) EnumDescriptor() ([]byte, []int) {
 	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{1}
 }
 
+type VirtualStreamProfile struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Label      string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	Resolution string                 `protobuf:"bytes,2,opt,name=resolution,proto3" json:"resolution,omitempty"`
+	VideoCodec string                 `protobuf:"bytes,3,opt,name=video_codec,json=videoCodec,proto3" json:"video_codec,omitempty"`
+	AudioCodec string                 `protobuf:"bytes,4,opt,name=audio_codec,json=audioCodec,proto3" json:"audio_codec,omitempty"`
+	HdrFormat  string                 `protobuf:"bytes,5,opt,name=hdr_format,json=hdrFormat,proto3" json:"hdr_format,omitempty"`
+	// When true, selecting this profile asks for the provider's complete ranked
+	// result set instead of applying a quality constraint.
+	AllResults    bool `protobuf:"varint,6,opt,name=all_results,json=allResults,proto3" json:"all_results,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VirtualStreamProfile) Reset() {
+	*x = VirtualStreamProfile{}
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VirtualStreamProfile) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VirtualStreamProfile) ProtoMessage() {}
+
+func (x *VirtualStreamProfile) ProtoReflect() protoreflect.Message {
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VirtualStreamProfile.ProtoReflect.Descriptor instead.
+func (*VirtualStreamProfile) Descriptor() ([]byte, []int) {
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *VirtualStreamProfile) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *VirtualStreamProfile) GetResolution() string {
+	if x != nil {
+		return x.Resolution
+	}
+	return ""
+}
+
+func (x *VirtualStreamProfile) GetVideoCodec() string {
+	if x != nil {
+		return x.VideoCodec
+	}
+	return ""
+}
+
+func (x *VirtualStreamProfile) GetAudioCodec() string {
+	if x != nil {
+		return x.AudioCodec
+	}
+	return ""
+}
+
+func (x *VirtualStreamProfile) GetHdrFormat() string {
+	if x != nil {
+		return x.HdrFormat
+	}
+	return ""
+}
+
+func (x *VirtualStreamProfile) GetAllResults() bool {
+	if x != nil {
+		return x.AllResults
+	}
+	return false
+}
+
+type ListVirtualStreamProfilesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CapabilityId  string                 `protobuf:"bytes,1,opt,name=capability_id,json=capabilityId,proto3" json:"capability_id,omitempty"`
+	MediaType     string                 `protobuf:"bytes,2,opt,name=media_type,json=mediaType,proto3" json:"media_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListVirtualStreamProfilesRequest) Reset() {
+	*x = ListVirtualStreamProfilesRequest{}
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListVirtualStreamProfilesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListVirtualStreamProfilesRequest) ProtoMessage() {}
+
+func (x *ListVirtualStreamProfilesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListVirtualStreamProfilesRequest.ProtoReflect.Descriptor instead.
+func (*ListVirtualStreamProfilesRequest) Descriptor() ([]byte, []int) {
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListVirtualStreamProfilesRequest) GetCapabilityId() string {
+	if x != nil {
+		return x.CapabilityId
+	}
+	return ""
+}
+
+func (x *ListVirtualStreamProfilesRequest) GetMediaType() string {
+	if x != nil {
+		return x.MediaType
+	}
+	return ""
+}
+
+type ListVirtualStreamProfilesResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Profiles      []*VirtualStreamProfile `protobuf:"bytes,1,rep,name=profiles,proto3" json:"profiles,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListVirtualStreamProfilesResponse) Reset() {
+	*x = ListVirtualStreamProfilesResponse{}
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListVirtualStreamProfilesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListVirtualStreamProfilesResponse) ProtoMessage() {}
+
+func (x *ListVirtualStreamProfilesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListVirtualStreamProfilesResponse.ProtoReflect.Descriptor instead.
+func (*ListVirtualStreamProfilesResponse) Descriptor() ([]byte, []int) {
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ListVirtualStreamProfilesResponse) GetProfiles() []*VirtualStreamProfile {
+	if x != nil {
+		return x.Profiles
+	}
+	return nil
+}
+
 // VirtualStreamProviderDescriptor advertises a plugin's virtual stream provider
 // features and media format support in its manifest.
 type VirtualStreamProviderDescriptor struct {
@@ -166,7 +348,7 @@ type VirtualStreamProviderDescriptor struct {
 
 func (x *VirtualStreamProviderDescriptor) Reset() {
 	*x = VirtualStreamProviderDescriptor{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[0]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -178,7 +360,7 @@ func (x *VirtualStreamProviderDescriptor) String() string {
 func (*VirtualStreamProviderDescriptor) ProtoMessage() {}
 
 func (x *VirtualStreamProviderDescriptor) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[0]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -191,7 +373,7 @@ func (x *VirtualStreamProviderDescriptor) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamProviderDescriptor.ProtoReflect.Descriptor instead.
 func (*VirtualStreamProviderDescriptor) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{0}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *VirtualStreamProviderDescriptor) GetSupportedMediaTypes() []string {
@@ -237,7 +419,7 @@ type VirtualStreamResolution struct {
 
 func (x *VirtualStreamResolution) Reset() {
 	*x = VirtualStreamResolution{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[1]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -249,7 +431,7 @@ func (x *VirtualStreamResolution) String() string {
 func (*VirtualStreamResolution) ProtoMessage() {}
 
 func (x *VirtualStreamResolution) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[1]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -262,7 +444,7 @@ func (x *VirtualStreamResolution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamResolution.ProtoReflect.Descriptor instead.
 func (*VirtualStreamResolution) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{1}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *VirtualStreamResolution) GetWidth() int32 {
@@ -308,7 +490,7 @@ type VirtualStreamHDR struct {
 
 func (x *VirtualStreamHDR) Reset() {
 	*x = VirtualStreamHDR{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[2]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -320,7 +502,7 @@ func (x *VirtualStreamHDR) String() string {
 func (*VirtualStreamHDR) ProtoMessage() {}
 
 func (x *VirtualStreamHDR) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[2]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -333,7 +515,7 @@ func (x *VirtualStreamHDR) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamHDR.ProtoReflect.Descriptor instead.
 func (*VirtualStreamHDR) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{2}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *VirtualStreamHDR) GetIsHdr() bool {
@@ -380,7 +562,7 @@ type VirtualStreamAvailability struct {
 
 func (x *VirtualStreamAvailability) Reset() {
 	*x = VirtualStreamAvailability{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[3]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -392,7 +574,7 @@ func (x *VirtualStreamAvailability) String() string {
 func (*VirtualStreamAvailability) ProtoMessage() {}
 
 func (x *VirtualStreamAvailability) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[3]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -405,7 +587,7 @@ func (x *VirtualStreamAvailability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamAvailability.ProtoReflect.Descriptor instead.
 func (*VirtualStreamAvailability) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{3}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *VirtualStreamAvailability) GetState() VirtualStreamAvailabilityState {
@@ -452,7 +634,7 @@ type VirtualStreamError struct {
 
 func (x *VirtualStreamError) Reset() {
 	*x = VirtualStreamError{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[4]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -464,7 +646,7 @@ func (x *VirtualStreamError) String() string {
 func (*VirtualStreamError) ProtoMessage() {}
 
 func (x *VirtualStreamError) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[4]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -477,7 +659,7 @@ func (x *VirtualStreamError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamError.ProtoReflect.Descriptor instead.
 func (*VirtualStreamError) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{4}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *VirtualStreamError) GetCode() VirtualStreamErrorCode {
@@ -551,7 +733,7 @@ type VirtualStreamCandidate struct {
 
 func (x *VirtualStreamCandidate) Reset() {
 	*x = VirtualStreamCandidate{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[5]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -563,7 +745,7 @@ func (x *VirtualStreamCandidate) String() string {
 func (*VirtualStreamCandidate) ProtoMessage() {}
 
 func (x *VirtualStreamCandidate) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[5]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -576,7 +758,7 @@ func (x *VirtualStreamCandidate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamCandidate.ProtoReflect.Descriptor instead.
 func (*VirtualStreamCandidate) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{5}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *VirtualStreamCandidate) GetCandidateId() string {
@@ -720,7 +902,7 @@ type VirtualStreamResult struct {
 
 func (x *VirtualStreamResult) Reset() {
 	*x = VirtualStreamResult{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[6]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -732,7 +914,7 @@ func (x *VirtualStreamResult) String() string {
 func (*VirtualStreamResult) ProtoMessage() {}
 
 func (x *VirtualStreamResult) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[6]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -745,7 +927,7 @@ func (x *VirtualStreamResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualStreamResult.ProtoReflect.Descriptor instead.
 func (*VirtualStreamResult) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{6}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *VirtualStreamResult) GetResultId() string {
@@ -808,7 +990,7 @@ type ResolveVirtualStreamRequest struct {
 
 func (x *ResolveVirtualStreamRequest) Reset() {
 	*x = ResolveVirtualStreamRequest{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[7]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -820,7 +1002,7 @@ func (x *ResolveVirtualStreamRequest) String() string {
 func (*ResolveVirtualStreamRequest) ProtoMessage() {}
 
 func (x *ResolveVirtualStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[7]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -833,7 +1015,7 @@ func (x *ResolveVirtualStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveVirtualStreamRequest.ProtoReflect.Descriptor instead.
 func (*ResolveVirtualStreamRequest) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{7}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ResolveVirtualStreamRequest) GetCapabilityId() string {
@@ -902,7 +1084,7 @@ type ResolveVirtualStreamResponse struct {
 
 func (x *ResolveVirtualStreamResponse) Reset() {
 	*x = ResolveVirtualStreamResponse{}
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[8]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -914,7 +1096,7 @@ func (x *ResolveVirtualStreamResponse) String() string {
 func (*ResolveVirtualStreamResponse) ProtoMessage() {}
 
 func (x *ResolveVirtualStreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[8]
+	mi := &file_silo_plugin_v1_virtual_stream_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -927,7 +1109,7 @@ func (x *ResolveVirtualStreamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveVirtualStreamResponse.ProtoReflect.Descriptor instead.
 func (*ResolveVirtualStreamResponse) Descriptor() ([]byte, []int) {
-	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{8}
+	return file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ResolveVirtualStreamResponse) GetResult() *VirtualStreamResult {
@@ -941,7 +1123,26 @@ var File_silo_plugin_v1_virtual_stream_proto protoreflect.FileDescriptor
 
 const file_silo_plugin_v1_virtual_stream_proto_rawDesc = "" +
 	"\n" +
-	"#silo/plugin/v1/virtual_stream.proto\x12\x0esilo.plugin.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x02\n" +
+	"#silo/plugin/v1/virtual_stream.proto\x12\x0esilo.plugin.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xce\x01\n" +
+	"\x14VirtualStreamProfile\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\x12\x1e\n" +
+	"\n" +
+	"resolution\x18\x02 \x01(\tR\n" +
+	"resolution\x12\x1f\n" +
+	"\vvideo_codec\x18\x03 \x01(\tR\n" +
+	"videoCodec\x12\x1f\n" +
+	"\vaudio_codec\x18\x04 \x01(\tR\n" +
+	"audioCodec\x12\x1d\n" +
+	"\n" +
+	"hdr_format\x18\x05 \x01(\tR\thdrFormat\x12\x1f\n" +
+	"\vall_results\x18\x06 \x01(\bR\n" +
+	"allResults\"f\n" +
+	" ListVirtualStreamProfilesRequest\x12#\n" +
+	"\rcapability_id\x18\x01 \x01(\tR\fcapabilityId\x12\x1d\n" +
+	"\n" +
+	"media_type\x18\x02 \x01(\tR\tmediaType\"e\n" +
+	"!ListVirtualStreamProfilesResponse\x12@\n" +
+	"\bprofiles\x18\x01 \x03(\v2$.silo.plugin.v1.VirtualStreamProfileR\bprofiles\"\x92\x02\n" +
 	"\x1fVirtualStreamProviderDescriptor\x122\n" +
 	"\x15supported_media_types\x18\x01 \x03(\tR\x13supportedMediaTypes\x121\n" +
 	"\x14supported_containers\x18\x02 \x03(\tR\x13supportedContainers\x12F\n" +
@@ -1034,9 +1235,10 @@ const file_silo_plugin_v1_virtual_stream_proto_rawDesc = "" +
 	"&VIRTUAL_STREAM_ERROR_CODE_RATE_LIMITED\x10\x04\x12*\n" +
 	"&VIRTUAL_STREAM_ERROR_CODE_UNAUTHORIZED\x10\x05\x12.\n" +
 	"*VIRTUAL_STREAM_ERROR_CODE_PROVIDER_FAILURE\x10\x06\x12'\n" +
-	"#VIRTUAL_STREAM_ERROR_CODE_PERMANENT\x10\a2\x8a\x01\n" +
+	"#VIRTUAL_STREAM_ERROR_CODE_PERMANENT\x10\a2\x8d\x02\n" +
 	"\x15VirtualStreamProvider\x12q\n" +
-	"\x14ResolveVirtualStream\x12+.silo.plugin.v1.ResolveVirtualStreamRequest\x1a,.silo.plugin.v1.ResolveVirtualStreamResponseBPZNgithub.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1;pluginv1b\x06proto3"
+	"\x14ResolveVirtualStream\x12+.silo.plugin.v1.ResolveVirtualStreamRequest\x1a,.silo.plugin.v1.ResolveVirtualStreamResponse\x12\x80\x01\n" +
+	"\x19ListVirtualStreamProfiles\x120.silo.plugin.v1.ListVirtualStreamProfilesRequest\x1a1.silo.plugin.v1.ListVirtualStreamProfilesResponseBPZNgithub.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1;pluginv1b\x06proto3"
 
 var (
 	file_silo_plugin_v1_virtual_stream_proto_rawDescOnce sync.Once
@@ -1051,49 +1253,55 @@ func file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP() []byte {
 }
 
 var file_silo_plugin_v1_virtual_stream_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_silo_plugin_v1_virtual_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_silo_plugin_v1_virtual_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_silo_plugin_v1_virtual_stream_proto_goTypes = []any{
-	(VirtualStreamAvailabilityState)(0),     // 0: silo.plugin.v1.VirtualStreamAvailabilityState
-	(VirtualStreamErrorCode)(0),             // 1: silo.plugin.v1.VirtualStreamErrorCode
-	(*VirtualStreamProviderDescriptor)(nil), // 2: silo.plugin.v1.VirtualStreamProviderDescriptor
-	(*VirtualStreamResolution)(nil),         // 3: silo.plugin.v1.VirtualStreamResolution
-	(*VirtualStreamHDR)(nil),                // 4: silo.plugin.v1.VirtualStreamHDR
-	(*VirtualStreamAvailability)(nil),       // 5: silo.plugin.v1.VirtualStreamAvailability
-	(*VirtualStreamError)(nil),              // 6: silo.plugin.v1.VirtualStreamError
-	(*VirtualStreamCandidate)(nil),          // 7: silo.plugin.v1.VirtualStreamCandidate
-	(*VirtualStreamResult)(nil),             // 8: silo.plugin.v1.VirtualStreamResult
-	(*ResolveVirtualStreamRequest)(nil),     // 9: silo.plugin.v1.ResolveVirtualStreamRequest
-	(*ResolveVirtualStreamResponse)(nil),    // 10: silo.plugin.v1.ResolveVirtualStreamResponse
-	nil,                                     // 11: silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
-	(*timestamppb.Timestamp)(nil),           // 12: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),             // 13: google.protobuf.Duration
-	(*structpb.Struct)(nil),                 // 14: google.protobuf.Struct
+	(VirtualStreamAvailabilityState)(0),       // 0: silo.plugin.v1.VirtualStreamAvailabilityState
+	(VirtualStreamErrorCode)(0),               // 1: silo.plugin.v1.VirtualStreamErrorCode
+	(*VirtualStreamProfile)(nil),              // 2: silo.plugin.v1.VirtualStreamProfile
+	(*ListVirtualStreamProfilesRequest)(nil),  // 3: silo.plugin.v1.ListVirtualStreamProfilesRequest
+	(*ListVirtualStreamProfilesResponse)(nil), // 4: silo.plugin.v1.ListVirtualStreamProfilesResponse
+	(*VirtualStreamProviderDescriptor)(nil),   // 5: silo.plugin.v1.VirtualStreamProviderDescriptor
+	(*VirtualStreamResolution)(nil),           // 6: silo.plugin.v1.VirtualStreamResolution
+	(*VirtualStreamHDR)(nil),                  // 7: silo.plugin.v1.VirtualStreamHDR
+	(*VirtualStreamAvailability)(nil),         // 8: silo.plugin.v1.VirtualStreamAvailability
+	(*VirtualStreamError)(nil),                // 9: silo.plugin.v1.VirtualStreamError
+	(*VirtualStreamCandidate)(nil),            // 10: silo.plugin.v1.VirtualStreamCandidate
+	(*VirtualStreamResult)(nil),               // 11: silo.plugin.v1.VirtualStreamResult
+	(*ResolveVirtualStreamRequest)(nil),       // 12: silo.plugin.v1.ResolveVirtualStreamRequest
+	(*ResolveVirtualStreamResponse)(nil),      // 13: silo.plugin.v1.ResolveVirtualStreamResponse
+	nil,                                       // 14: silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
+	(*timestamppb.Timestamp)(nil),             // 15: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),               // 16: google.protobuf.Duration
+	(*structpb.Struct)(nil),                   // 17: google.protobuf.Struct
 }
 var file_silo_plugin_v1_virtual_stream_proto_depIdxs = []int32{
-	0,  // 0: silo.plugin.v1.VirtualStreamAvailability.state:type_name -> silo.plugin.v1.VirtualStreamAvailabilityState
-	12, // 1: silo.plugin.v1.VirtualStreamAvailability.estimated_ready_at:type_name -> google.protobuf.Timestamp
-	1,  // 2: silo.plugin.v1.VirtualStreamError.code:type_name -> silo.plugin.v1.VirtualStreamErrorCode
-	13, // 3: silo.plugin.v1.VirtualStreamError.retry_after:type_name -> google.protobuf.Duration
-	12, // 4: silo.plugin.v1.VirtualStreamCandidate.expires_at:type_name -> google.protobuf.Timestamp
-	3,  // 5: silo.plugin.v1.VirtualStreamCandidate.resolution:type_name -> silo.plugin.v1.VirtualStreamResolution
-	4,  // 6: silo.plugin.v1.VirtualStreamCandidate.hdr:type_name -> silo.plugin.v1.VirtualStreamHDR
-	5,  // 7: silo.plugin.v1.VirtualStreamCandidate.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
-	6,  // 8: silo.plugin.v1.VirtualStreamCandidate.error:type_name -> silo.plugin.v1.VirtualStreamError
-	14, // 9: silo.plugin.v1.VirtualStreamCandidate.metadata:type_name -> google.protobuf.Struct
-	7,  // 10: silo.plugin.v1.VirtualStreamResult.candidates:type_name -> silo.plugin.v1.VirtualStreamCandidate
-	5,  // 11: silo.plugin.v1.VirtualStreamResult.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
-	6,  // 12: silo.plugin.v1.VirtualStreamResult.error:type_name -> silo.plugin.v1.VirtualStreamError
-	14, // 13: silo.plugin.v1.VirtualStreamResult.metadata:type_name -> google.protobuf.Struct
-	11, // 14: silo.plugin.v1.ResolveVirtualStreamRequest.external_ids:type_name -> silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
-	14, // 15: silo.plugin.v1.ResolveVirtualStreamRequest.metadata:type_name -> google.protobuf.Struct
-	8,  // 16: silo.plugin.v1.ResolveVirtualStreamResponse.result:type_name -> silo.plugin.v1.VirtualStreamResult
-	9,  // 17: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:input_type -> silo.plugin.v1.ResolveVirtualStreamRequest
-	10, // 18: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:output_type -> silo.plugin.v1.ResolveVirtualStreamResponse
-	18, // [18:19] is the sub-list for method output_type
-	17, // [17:18] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	2,  // 0: silo.plugin.v1.ListVirtualStreamProfilesResponse.profiles:type_name -> silo.plugin.v1.VirtualStreamProfile
+	0,  // 1: silo.plugin.v1.VirtualStreamAvailability.state:type_name -> silo.plugin.v1.VirtualStreamAvailabilityState
+	15, // 2: silo.plugin.v1.VirtualStreamAvailability.estimated_ready_at:type_name -> google.protobuf.Timestamp
+	1,  // 3: silo.plugin.v1.VirtualStreamError.code:type_name -> silo.plugin.v1.VirtualStreamErrorCode
+	16, // 4: silo.plugin.v1.VirtualStreamError.retry_after:type_name -> google.protobuf.Duration
+	15, // 5: silo.plugin.v1.VirtualStreamCandidate.expires_at:type_name -> google.protobuf.Timestamp
+	6,  // 6: silo.plugin.v1.VirtualStreamCandidate.resolution:type_name -> silo.plugin.v1.VirtualStreamResolution
+	7,  // 7: silo.plugin.v1.VirtualStreamCandidate.hdr:type_name -> silo.plugin.v1.VirtualStreamHDR
+	8,  // 8: silo.plugin.v1.VirtualStreamCandidate.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
+	9,  // 9: silo.plugin.v1.VirtualStreamCandidate.error:type_name -> silo.plugin.v1.VirtualStreamError
+	17, // 10: silo.plugin.v1.VirtualStreamCandidate.metadata:type_name -> google.protobuf.Struct
+	10, // 11: silo.plugin.v1.VirtualStreamResult.candidates:type_name -> silo.plugin.v1.VirtualStreamCandidate
+	8,  // 12: silo.plugin.v1.VirtualStreamResult.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
+	9,  // 13: silo.plugin.v1.VirtualStreamResult.error:type_name -> silo.plugin.v1.VirtualStreamError
+	17, // 14: silo.plugin.v1.VirtualStreamResult.metadata:type_name -> google.protobuf.Struct
+	14, // 15: silo.plugin.v1.ResolveVirtualStreamRequest.external_ids:type_name -> silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
+	17, // 16: silo.plugin.v1.ResolveVirtualStreamRequest.metadata:type_name -> google.protobuf.Struct
+	11, // 17: silo.plugin.v1.ResolveVirtualStreamResponse.result:type_name -> silo.plugin.v1.VirtualStreamResult
+	12, // 18: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:input_type -> silo.plugin.v1.ResolveVirtualStreamRequest
+	3,  // 19: silo.plugin.v1.VirtualStreamProvider.ListVirtualStreamProfiles:input_type -> silo.plugin.v1.ListVirtualStreamProfilesRequest
+	13, // 20: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:output_type -> silo.plugin.v1.ResolveVirtualStreamResponse
+	4,  // 21: silo.plugin.v1.VirtualStreamProvider.ListVirtualStreamProfiles:output_type -> silo.plugin.v1.ListVirtualStreamProfilesResponse
+	20, // [20:22] is the sub-list for method output_type
+	18, // [18:20] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_silo_plugin_v1_virtual_stream_proto_init() }
@@ -1107,7 +1315,7 @@ func file_silo_plugin_v1_virtual_stream_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_silo_plugin_v1_virtual_stream_proto_rawDesc), len(file_silo_plugin_v1_virtual_stream_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   10,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
