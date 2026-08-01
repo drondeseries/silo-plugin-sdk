@@ -27,15 +27,25 @@ jobs:
             tag="${GITHUB_REF_NAME}"
             version="${tag#v}"
           else
-            # Auto-increment patch from latest tag.
-            latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
+            # Auto-increment the fork-specific prerelease sequence. Stable
+            # upstream tags remain untouched and are never parsed as counters.
+            latest=$(git tag -l 'v*-virtual.*' --sort=-v:refname | head -n1)
             if [ -z "$latest" ]; then
-              version="0.1.0"
+              stable=$(git tag -l 'v*' --sort=-v:refname | grep -Ev -- '-' | head -n1 || true)
+              base="${stable#v}"
+              if [ -z "$base" ]; then
+                base="0.1.0"
+              fi
+              version="${base}-virtual.1"
             else
               base="${latest#v}"
-              IFS='.' read -r major minor patch <<< "$base"
-              patch=$((patch + 1))
-              version="${major}.${minor}.${patch}"
+              prefix="${base%.*}"
+              counter="${base##*.}"
+              if ! [[ "$counter" =~ ^[0-9]+$ ]]; then
+                echo "invalid virtual release tag: $latest" >&2
+                exit 1
+              fi
+              version="${prefix}.$((counter + 1))"
             fi
             tag="v${version}"
 
@@ -71,8 +81,8 @@ jobs:
           # still fetched directly from GitHub; the proxy only serves
           # third-party deps whose origin hosts reject CI traffic (gonum.org).
           GOPROXY: https://proxy.golang.org,direct
-          GOPRIVATE: github.com/Silo-Server/*
-          GONOSUMDB: github.com/Silo-Server/*
+          GOPRIVATE: github.com/Silo-Server/*,github.com/drondeseries/*
+          GONOSUMDB: github.com/Silo-Server/*,github.com/drondeseries/*
         run: |
           tmpdir="$(mktemp -d)"
           cd "$tmpdir"
@@ -89,7 +99,8 @@ jobs:
 
           func main() {}
           EOF
-          go get "github.com/Silo-Server/silo-plugin-sdk@${{ needs.version.outputs.tag }}"
+          go mod edit -require=github.com/Silo-Server/silo-plugin-sdk@v0.0.0
+          go mod edit "-replace=github.com/Silo-Server/silo-plugin-sdk=github.com/drondeseries/silo-plugin-sdk@${{ needs.version.outputs.tag }}"
           go mod tidy
           go build ./...
 

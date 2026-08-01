@@ -54,3 +54,32 @@ func TestValidateVirtualStreamProviderRejectsDescriptorOnOtherCapability(t *test
 		t.Fatal("expected misplaced virtual stream descriptor to fail validation")
 	}
 }
+
+func TestValidateVirtualStreamProviderRequiresTypedDescriptor(t *testing.T) {
+	manifest := &pluginv1.PluginManifest{
+		PluginId: "silo.invalid", Version: "1.0.0",
+		Capabilities: []*pluginv1.CapabilityDescriptor{{
+			Type: "virtual_stream_provider.v1", Id: "streams",
+		}},
+	}
+	if err := publicmanifest.Validate(manifest); err == nil {
+		t.Fatal("expected missing virtual stream descriptor to fail validation")
+	}
+}
+
+func TestValidateVirtualStreamProviderRequiresKnownMediaTypes(t *testing.T) {
+	manifest := &pluginv1.PluginManifest{
+		PluginId: "silo.invalid", Version: "1.0.0",
+		Capabilities: []*pluginv1.CapabilityDescriptor{{
+			Type: "virtual_stream_provider.v1", Id: "streams",
+			VirtualStreamProvider: &pluginv1.VirtualStreamProviderDescriptor{},
+		}},
+	}
+	if err := publicmanifest.Validate(manifest); err == nil {
+		t.Fatal("expected empty virtual stream media types to fail validation")
+	}
+	manifest.Capabilities[0].VirtualStreamProvider.SupportedMediaTypes = []string{"movie", "banana"}
+	if err := publicmanifest.Validate(manifest); err == nil {
+		t.Fatal("expected unknown virtual stream media type to fail validation")
+	}
+}

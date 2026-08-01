@@ -24,8 +24,11 @@ import (
 // them via the admin plugins API so SPAs can filter by them client-side.
 // They do not drive any dispatch behavior on the server side.
 var (
-	knownCapabilityTypes = knownCapabilityTypeSet()
-	watchSyncSlugPattern = regexp.MustCompile(`^[a-z0-9]+(?:[._-][a-z0-9]+)*$`)
+	knownCapabilityTypes         = knownCapabilityTypeSet()
+	watchSyncSlugPattern         = regexp.MustCompile(`^[a-z0-9]+(?:[._-][a-z0-9]+)*$`)
+	knownVirtualStreamMediaTypes = map[string]struct{}{
+		"movie": {}, "series": {}, "episode": {}, "track": {},
+	}
 )
 
 const (
@@ -144,6 +147,26 @@ func validateVirtualStreamCapability(descriptor *pluginv1.CapabilityDescriptor) 
 			return fmt.Errorf("plugin capability %q: virtual_stream_provider descriptor requires type %q", descriptor.GetId(), capability.VirtualStreamProvider)
 		}
 		return nil
+	}
+	if !watchSyncSlugPattern.MatchString(descriptor.GetId()) {
+		return fmt.Errorf("plugin capability %q: virtual stream capability id must be a path-safe lowercase slug", descriptor.GetId())
+	}
+	if virtualStream == nil {
+		return fmt.Errorf("plugin capability %q: virtual_stream_provider descriptor is required", descriptor.GetId())
+	}
+	if len(virtualStream.GetSupportedMediaTypes()) == 0 {
+		return fmt.Errorf("plugin capability %q: at least one supported media type is required", descriptor.GetId())
+	}
+	seenMediaTypes := make(map[string]struct{}, len(virtualStream.GetSupportedMediaTypes()))
+	for _, mediaType := range virtualStream.GetSupportedMediaTypes() {
+		mediaType = strings.TrimSpace(mediaType)
+		if _, ok := knownVirtualStreamMediaTypes[mediaType]; !ok {
+			return fmt.Errorf("plugin capability %q: unsupported virtual stream media type %q", descriptor.GetId(), mediaType)
+		}
+		if _, duplicate := seenMediaTypes[mediaType]; duplicate {
+			return fmt.Errorf("plugin capability %q: duplicate virtual stream media type %q", descriptor.GetId(), mediaType)
+		}
+		seenMediaTypes[mediaType] = struct{}{}
 	}
 	return nil
 }
