@@ -98,8 +98,17 @@ func (c *Client) UpsertVirtualMedia(ctx context.Context, req VirtualMediaRequest
 	if req.MediaType != "movie" && req.MediaType != "series" {
 		return nil, fmt.Errorf("runtimehost: media type must be movie or series")
 	}
-	if req.Title == "" || req.VirtualURI == "" {
-		return nil, fmt.Errorf("runtimehost: title and virtual URI are required")
+	if req.Title == "" {
+		return nil, fmt.Errorf("runtimehost: title is required")
+	}
+	if req.MediaType == "movie" && req.VirtualURI == "" {
+		return nil, fmt.Errorf("runtimehost: movie virtual URI is required")
+	}
+	if req.MediaType == "series" && req.VirtualURI != "" {
+		return nil, fmt.Errorf("runtimehost: series virtual URI must be attached to episodes")
+	}
+	if req.MediaType == "series" && len(req.Episodes) == 0 {
+		return nil, fmt.Errorf("runtimehost: series episodes are required")
 	}
 	episodes := make([]*pluginv1.VirtualEpisode, 0, len(req.Episodes))
 	for _, episode := range req.Episodes {
