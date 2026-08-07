@@ -71,6 +71,24 @@ func DefaultPluginSet(servers CapabilityServers) plugin.PluginSet {
 	}
 }
 
+// DefaultPluginSetWithWatchSyncDeviceAuthorization returns the default plugin
+// set plus the separate device-authorization service. Keeping that server out
+// of CapabilityServers preserves the released v0.12 unkeyed struct shape.
+func DefaultPluginSetWithWatchSyncDeviceAuthorization(
+	servers CapabilityServers,
+	deviceAuthorization pluginv1.WatchSyncDeviceAuthorizationServiceServer,
+) plugin.PluginSet {
+	if deviceAuthorization == nil {
+		return DefaultPluginSet(servers)
+	}
+	return plugin.PluginSet{
+		PluginSetName: &grpcPluginWithWatchSyncDeviceAuthorization{
+			GRPCPlugin:          &GRPCPlugin{Servers: servers},
+			deviceAuthorization: deviceAuthorization,
+		},
+	}
+}
+
 func NewClient(conn *grpc.ClientConn) *Client {
 	return &Client{conn: conn}
 }
@@ -138,9 +156,29 @@ func (c *Client) VirtualStreamProvider() pluginv1.VirtualStreamProviderClient {
 	return pluginv1.NewVirtualStreamProviderClient(c.conn)
 }
 
+func (c *Client) WatchSyncDeviceAuthorization() pluginv1.WatchSyncDeviceAuthorizationServiceClient {
+	return pluginv1.NewWatchSyncDeviceAuthorizationServiceClient(c.conn)
+}
+
 type GRPCPlugin struct {
 	plugin.Plugin
 	Servers CapabilityServers
+}
+
+type grpcPluginWithWatchSyncDeviceAuthorization struct {
+	*GRPCPlugin
+	deviceAuthorization pluginv1.WatchSyncDeviceAuthorizationServiceServer
+}
+
+func (p *grpcPluginWithWatchSyncDeviceAuthorization) GRPCServer(
+	broker *plugin.GRPCBroker,
+	server *grpc.Server,
+) error {
+	if err := p.GRPCPlugin.GRPCServer(broker, server); err != nil {
+		return err
+	}
+	pluginv1.RegisterWatchSyncDeviceAuthorizationServiceServer(server, p.deviceAuthorization)
+	return nil
 }
 
 func (p *GRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, server *grpc.Server) error {
@@ -193,16 +231,6 @@ func (p *GRPCPlugin) GRPCClient(_ context.Context, broker *plugin.GRPCBroker, co
 	return &Client{conn: conn, broker: broker}, nil
 }
 
-// pluginHostState is a process-singleton holding the plugin-side broker and
-// the host-assigned broker stream ID for RuntimeHost. The singleton model is
-// appropriate because go-plugin runs exactly one plugin per process.
-//
-// The dialed *runtimehost.Client is cached: silo's bindRuntimeHost
-// registers ONE go-plugin broker stream and AcceptAndServe handles a single
-// connection on it (multiplexing many gRPC RPCs). Re-dialing per call would
-// open a fresh stream the host isn't listening on, causing every call after
-// the first to hang on its way to a timeout. Holding one client and reusing
-// it keeps all RPCs on the original stream.
 type pluginHostState struct {
 	mu       sync.Mutex
 	broker   *plugin.GRPCBroker
@@ -215,7 +243,6 @@ var pluginHost = &pluginHostState{}
 func (s *pluginHostState) setBroker(b *plugin.GRPCBroker) {
 	s.mu.Lock()
 	s.broker = b
-	// Invalidate stream state tied to a previous broker.
 	s.brokerID = 0
 	s.client = nil
 	s.mu.Unlock()
@@ -224,7 +251,6 @@ func (s *pluginHostState) setBroker(b *plugin.GRPCBroker) {
 func (s *pluginHostState) setBrokerID(id uint32) {
 	s.mu.Lock()
 	s.brokerID = id
-	// new stream id → drop any cached client
 	s.client = nil
 	s.mu.Unlock()
 }
@@ -246,23 +272,11 @@ func (s *pluginHostState) host() *runtimehost.Client {
 	return s.client
 }
 
-// SetHostBrokerID stores the broker stream ID assigned by the host. The
-// generated runtimedefault.Server's BindHostBroker handler calls this when the
-// host invokes Runtime.BindHostBroker. Plugin authors do not call this
-// directly when they embed runtimedefault.Server.
 func SetHostBrokerID(id uint32) { pluginHost.setBrokerID(id) }
 
-// Host returns a runtimehost.Client connected to the silo host. Returns
-// nil before the host has invoked Runtime.BindHostBroker (i.e. very briefly
-// during plugin startup) or if the broker dial fails. Capability handlers
-// should treat nil as transient and either skip or surface a temporary error.
-//
-// The first successful call dials the host broker stream and caches the
-// *runtimehost.Client; later calls reuse the same client.
 func Host() *runtimehost.Client { return pluginHost.host() }
 
 func Serve(cfg ServeConfig) {
-	// Handle "manifest" subcommand: print the plugin manifest as JSON and exit.
 	if len(os.Args) > 1 && os.Args[1] == "manifest" {
 		if cfg.Servers.Runtime == nil {
 			fmt.Fprintln(os.Stderr, "runtime server is required to retrieve manifest")
@@ -295,3 +309,4 @@ func Serve(cfg ServeConfig) {
 		Logger:          cfg.Logger,
 	})
 }
+

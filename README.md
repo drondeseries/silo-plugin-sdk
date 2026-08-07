@@ -127,15 +127,18 @@ The `auth_provider.v1` capability also exposes OAuth-flow RPCs (`InitAuthorize`,
 
 `watch_sync_provider.v1` lets external plugins participate in Silo's host-owned
 watch-provider pipeline. The host owns encrypted per-profile credentials,
-OAuth state, durable desired-state events, retries, ordering, and
-reconciliation. Plugins are stateless protocol adapters: they receive secrets
-only for the duration of an RPC, map rich movie/episode identity to an upstream
-service, and return typed apply or retry outcomes.
+authorization-code and device-code flow state, durable desired-state events,
+retries, ordering, and reconciliation. Plugins are stateless protocol adapters:
+they receive secrets only for the duration of an RPC, map rich movie/episode
+identity to an upstream service, and return typed apply or retry outcomes.
 
 Watch-sync plugins must not persist or log credentials, authorization codes,
 provider flow state, or secret configuration. `ApplyEvents` is an at-least-once
 contract; plugins must treat `event_id` as stable across retries and implement
-convergent desired-state updates rather than increments.
+convergent desired-state updates rather than increments. That rule also applies
+to scrobble stops: replaying the same event ID must not create another play.
+For playback events, `completed` is the host's authoritative watched decision;
+plugins must not infer completion from `watch_history_id` or percentage alone.
 
 Authenticated RPCs receive the same host-owned capability, configuration, and
 credential data through `WatchSyncAuthenticatedContext`. The context exists
@@ -144,6 +147,29 @@ Credentials returned by any RPC are complete authoritative replacements, not
 patches. The host validates and persists them before consuming results, pages,
 or faults—even when the response contains a fault. If credential persistence
 fails, the host commits no other response data.
+
+Device-code plugins register both `WatchSyncProvider` and the separate
+`WatchSyncDeviceAuthorizationService`. Keeping device authorization in a
+second service preserves source compatibility for v0.12 Go providers that
+implemented `WatchSyncProviderServer` directly. Register it without changing
+the released `CapabilityServers` shape:
+
+```go
+runtime.ServeManifestWithOptions(manifestJSON, version, servers,
+    runtime.WithWatchSyncDeviceAuthorization(deviceAuthServer))
+```
+
+A pending poll may replace its opaque provider state, polling interval, and
+expiry; the host encrypts and persists those values before the next poll.
+Those updates remain part of the same user challenge, so the original user code
+and verification URL must stay valid until expiry. An explicitly empty
+`provider_state` clears the prior state; omitting it retains the prior state.
+
+`WatchSyncProviderConfig` is keyed by manifest config key and field, for example
+`provider.client_id`. Scalar values are sent as strings and structured values
+as JSON. Fields marked secret in the manifest are sent through `secret_values`;
+undeclared fields are treated as secret. Plugins must accept configuration from
+the RPC context rather than relying on process-global state.
 
 Descriptors and events use the shared `WatchSyncMediaType` enum so advertised
 support and delivered media cannot drift between string conventions. Apply
@@ -154,11 +180,19 @@ Connection-wide faults such as invalid credentials belong on the RPC response.
 
 `ListRemoteState` returns provider-neutral typed subrecords. `watched` carries a
 play count and last-watched time; `progress` carries a fractional percentage and
-paused time. An item may contain either or both. The host keeps the request
-`cursor` fixed while following ephemeral page tokens, commits each successful
-page, and only then persists the final `next_cursor`. `complete_snapshot=true`
-means the traversal is authoritative; when false, missing items are not
-deletions.
+paused time; `favorite` and `watchlist` carry list membership. An item may
+contain multiple state families. The host requests only the state families a
+sync phase needs, keeps that phase's `cursor` fixed while following ephemeral
+page tokens, commits each successful page, and only then persists the final
+`next_cursor`. `complete_snapshot=true` means the traversal is authoritative;
+when false, missing items are not deletions. An incremental favorite or
+watchlist removal is an item whose corresponding list state has `removed=true`;
+it may omit `media` when `provider_item_key` identifies a record previously
+returned to the host. When
+`provides_watchlist_order=true`, watchlist traversals must be complete snapshots
+and the order of returned watchlist states is the remote list order. Event
+`list_position` is presence-aware: an explicit zero means the first position,
+while omission means no requested ordering.
 
 ## Scan sources
 

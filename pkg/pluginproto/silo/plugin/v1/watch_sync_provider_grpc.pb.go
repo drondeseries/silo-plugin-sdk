@@ -355,3 +355,149 @@ var WatchSyncProvider_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "silo/plugin/v1/watch_sync_provider.proto",
 }
+
+const (
+	WatchSyncDeviceAuthorizationService_Start_FullMethodName = "/silo.plugin.v1.WatchSyncDeviceAuthorizationService/Start"
+	WatchSyncDeviceAuthorizationService_Poll_FullMethodName  = "/silo.plugin.v1.WatchSyncDeviceAuthorizationService/Poll"
+)
+
+// WatchSyncDeviceAuthorizationServiceClient is the client API for WatchSyncDeviceAuthorizationService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// WatchSyncDeviceAuthorizationService is separate from WatchSyncProvider so adding
+// device authorization does not add methods to the released v0.12 Go server
+// interface. A plugin advertising DEVICE_CODE registers both services.
+type WatchSyncDeviceAuthorizationServiceClient interface {
+	Start(ctx context.Context, in *WatchSyncDeviceAuthorizationServiceStartRequest, opts ...grpc.CallOption) (*WatchSyncDeviceAuthorizationServiceStartResponse, error)
+	Poll(ctx context.Context, in *WatchSyncDeviceAuthorizationServicePollRequest, opts ...grpc.CallOption) (*WatchSyncDeviceAuthorizationServicePollResponse, error)
+}
+
+type watchSyncDeviceAuthorizationServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewWatchSyncDeviceAuthorizationServiceClient(cc grpc.ClientConnInterface) WatchSyncDeviceAuthorizationServiceClient {
+	return &watchSyncDeviceAuthorizationServiceClient{cc}
+}
+
+func (c *watchSyncDeviceAuthorizationServiceClient) Start(ctx context.Context, in *WatchSyncDeviceAuthorizationServiceStartRequest, opts ...grpc.CallOption) (*WatchSyncDeviceAuthorizationServiceStartResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WatchSyncDeviceAuthorizationServiceStartResponse)
+	err := c.cc.Invoke(ctx, WatchSyncDeviceAuthorizationService_Start_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *watchSyncDeviceAuthorizationServiceClient) Poll(ctx context.Context, in *WatchSyncDeviceAuthorizationServicePollRequest, opts ...grpc.CallOption) (*WatchSyncDeviceAuthorizationServicePollResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WatchSyncDeviceAuthorizationServicePollResponse)
+	err := c.cc.Invoke(ctx, WatchSyncDeviceAuthorizationService_Poll_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// WatchSyncDeviceAuthorizationServiceServer is the server API for WatchSyncDeviceAuthorizationService service.
+// All implementations should embed UnimplementedWatchSyncDeviceAuthorizationServiceServer
+// for forward compatibility.
+//
+// WatchSyncDeviceAuthorizationService is separate from WatchSyncProvider so adding
+// device authorization does not add methods to the released v0.12 Go server
+// interface. A plugin advertising DEVICE_CODE registers both services.
+type WatchSyncDeviceAuthorizationServiceServer interface {
+	Start(context.Context, *WatchSyncDeviceAuthorizationServiceStartRequest) (*WatchSyncDeviceAuthorizationServiceStartResponse, error)
+	Poll(context.Context, *WatchSyncDeviceAuthorizationServicePollRequest) (*WatchSyncDeviceAuthorizationServicePollResponse, error)
+}
+
+// UnimplementedWatchSyncDeviceAuthorizationServiceServer should be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedWatchSyncDeviceAuthorizationServiceServer struct{}
+
+func (UnimplementedWatchSyncDeviceAuthorizationServiceServer) Start(context.Context, *WatchSyncDeviceAuthorizationServiceStartRequest) (*WatchSyncDeviceAuthorizationServiceStartResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Start not implemented")
+}
+func (UnimplementedWatchSyncDeviceAuthorizationServiceServer) Poll(context.Context, *WatchSyncDeviceAuthorizationServicePollRequest) (*WatchSyncDeviceAuthorizationServicePollResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Poll not implemented")
+}
+func (UnimplementedWatchSyncDeviceAuthorizationServiceServer) testEmbeddedByValue() {}
+
+// UnsafeWatchSyncDeviceAuthorizationServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WatchSyncDeviceAuthorizationServiceServer will
+// result in compilation errors.
+type UnsafeWatchSyncDeviceAuthorizationServiceServer interface {
+	mustEmbedUnimplementedWatchSyncDeviceAuthorizationServiceServer()
+}
+
+func RegisterWatchSyncDeviceAuthorizationServiceServer(s grpc.ServiceRegistrar, srv WatchSyncDeviceAuthorizationServiceServer) {
+	// If the following call panics, it indicates UnimplementedWatchSyncDeviceAuthorizationServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&WatchSyncDeviceAuthorizationService_ServiceDesc, srv)
+}
+
+func _WatchSyncDeviceAuthorizationService_Start_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WatchSyncDeviceAuthorizationServiceStartRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WatchSyncDeviceAuthorizationServiceServer).Start(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WatchSyncDeviceAuthorizationService_Start_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WatchSyncDeviceAuthorizationServiceServer).Start(ctx, req.(*WatchSyncDeviceAuthorizationServiceStartRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WatchSyncDeviceAuthorizationService_Poll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WatchSyncDeviceAuthorizationServicePollRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WatchSyncDeviceAuthorizationServiceServer).Poll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WatchSyncDeviceAuthorizationService_Poll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WatchSyncDeviceAuthorizationServiceServer).Poll(ctx, req.(*WatchSyncDeviceAuthorizationServicePollRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// WatchSyncDeviceAuthorizationService_ServiceDesc is the grpc.ServiceDesc for WatchSyncDeviceAuthorizationService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var WatchSyncDeviceAuthorizationService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "silo.plugin.v1.WatchSyncDeviceAuthorizationService",
+	HandlerType: (*WatchSyncDeviceAuthorizationServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Start",
+			Handler:    _WatchSyncDeviceAuthorizationService_Start_Handler,
+		},
+		{
+			MethodName: "Poll",
+			Handler:    _WatchSyncDeviceAuthorizationService_Poll_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "silo/plugin/v1/watch_sync_provider.proto",
+}
