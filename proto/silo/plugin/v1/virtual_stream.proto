@@ -151,6 +151,12 @@ message VirtualStreamCandidate {
   VirtualStreamError error = 16;
   // Arbitrary provider-specific metadata.
   google.protobuf.Struct metadata = 17;
+  // Optional upstream request headers required to access the temporary URI.
+  map<string, string> request_headers = 18;
+  // Indicates presence of Dolby Atmos metadata.
+  bool has_atmos = 19;
+  // Custom format or provider quality score.
+  int32 quality_score = 20;
 }
 
 // VirtualStreamResult contains the provider-neutral resolution outcome for just-in-time playback,
@@ -181,6 +187,10 @@ message ResolveVirtualStreamRequest {
   int32 season_number = 6;
   int32 episode_number = 7;
   google.protobuf.Struct metadata = 8;
+  // Specific candidate IDs that failed and should be excluded from resolution.
+  repeated string excluded_candidate_ids = 9;
+  // Preferred candidate ID if known-good.
+  string preferred_candidate_id = 10;
 }
 
 // ResolveVirtualStreamResponse wraps the virtual stream resolution result.

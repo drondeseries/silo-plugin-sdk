@@ -726,7 +726,13 @@ type VirtualStreamCandidate struct {
 	// Candidate-specific error metadata (when degraded or failed).
 	Error *VirtualStreamError `protobuf:"bytes,16,opt,name=error,proto3" json:"error,omitempty"`
 	// Arbitrary provider-specific metadata.
-	Metadata      *structpb.Struct `protobuf:"bytes,17,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	Metadata *structpb.Struct `protobuf:"bytes,17,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	// Optional upstream request headers required to access the temporary URI.
+	RequestHeaders map[string]string `protobuf:"bytes,18,rep,name=request_headers,json=requestHeaders,proto3" json:"request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Indicates presence of Dolby Atmos metadata.
+	HasAtmos bool `protobuf:"varint,19,opt,name=has_atmos,json=hasAtmos,proto3" json:"has_atmos,omitempty"`
+	// Custom format or provider quality score.
+	QualityScore  int32 `protobuf:"varint,20,opt,name=quality_score,json=qualityScore,proto3" json:"quality_score,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -880,6 +886,27 @@ func (x *VirtualStreamCandidate) GetMetadata() *structpb.Struct {
 	return nil
 }
 
+func (x *VirtualStreamCandidate) GetRequestHeaders() map[string]string {
+	if x != nil {
+		return x.RequestHeaders
+	}
+	return nil
+}
+
+func (x *VirtualStreamCandidate) GetHasAtmos() bool {
+	if x != nil {
+		return x.HasAtmos
+	}
+	return false
+}
+
+func (x *VirtualStreamCandidate) GetQualityScore() int32 {
+	if x != nil {
+		return x.QualityScore
+	}
+	return 0
+}
+
 // VirtualStreamResult contains the provider-neutral resolution outcome for just-in-time playback,
 // supporting multiple candidate streams, availability, and error metadata.
 type VirtualStreamResult struct {
@@ -984,8 +1011,12 @@ type ResolveVirtualStreamRequest struct {
 	SeasonNumber  int32             `protobuf:"varint,6,opt,name=season_number,json=seasonNumber,proto3" json:"season_number,omitempty"`
 	EpisodeNumber int32             `protobuf:"varint,7,opt,name=episode_number,json=episodeNumber,proto3" json:"episode_number,omitempty"`
 	Metadata      *structpb.Struct  `protobuf:"bytes,8,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Specific candidate IDs that failed and should be excluded from resolution.
+	ExcludedCandidateIds []string `protobuf:"bytes,9,rep,name=excluded_candidate_ids,json=excludedCandidateIds,proto3" json:"excluded_candidate_ids,omitempty"`
+	// Preferred candidate ID if known-good.
+	PreferredCandidateId string `protobuf:"bytes,10,opt,name=preferred_candidate_id,json=preferredCandidateId,proto3" json:"preferred_candidate_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *ResolveVirtualStreamRequest) Reset() {
@@ -1072,6 +1103,20 @@ func (x *ResolveVirtualStreamRequest) GetMetadata() *structpb.Struct {
 		return x.Metadata
 	}
 	return nil
+}
+
+func (x *ResolveVirtualStreamRequest) GetExcludedCandidateIds() []string {
+	if x != nil {
+		return x.ExcludedCandidateIds
+	}
+	return nil
+}
+
+func (x *ResolveVirtualStreamRequest) GetPreferredCandidateId() string {
+	if x != nil {
+		return x.PreferredCandidateId
+	}
+	return ""
 }
 
 // ResolveVirtualStreamResponse wraps the virtual stream resolution result.
@@ -1169,7 +1214,7 @@ const file_silo_plugin_v1_virtual_stream_proto_rawDesc = "" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
 	"\tretryable\x18\x03 \x01(\bR\tretryable\x12:\n" +
 	"\vretry_after\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\n" +
-	"retryAfter\"\x85\x06\n" +
+	"retryAfter\"\xef\a\n" +
 	"\x16VirtualStreamCandidate\x12!\n" +
 	"\fcandidate_id\x18\x01 \x01(\tR\vcandidateId\x12\x1f\n" +
 	"\vprovider_id\x18\x02 \x01(\tR\n" +
@@ -1194,7 +1239,13 @@ const file_silo_plugin_v1_virtual_stream_proto_rawDesc = "" +
 	"\x12subtitle_languages\x18\x0e \x03(\tR\x11subtitleLanguages\x12M\n" +
 	"\favailability\x18\x0f \x01(\v2).silo.plugin.v1.VirtualStreamAvailabilityR\favailability\x128\n" +
 	"\x05error\x18\x10 \x01(\v2\".silo.plugin.v1.VirtualStreamErrorR\x05error\x123\n" +
-	"\bmetadata\x18\x11 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\xd9\x02\n" +
+	"\bmetadata\x18\x11 \x01(\v2\x17.google.protobuf.StructR\bmetadata\x12c\n" +
+	"\x0frequest_headers\x18\x12 \x03(\v2:.silo.plugin.v1.VirtualStreamCandidate.RequestHeadersEntryR\x0erequestHeaders\x12\x1b\n" +
+	"\thas_atmos\x18\x13 \x01(\bR\bhasAtmos\x12#\n" +
+	"\rquality_score\x18\x14 \x01(\x05R\fqualityScore\x1aA\n" +
+	"\x13RequestHeadersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd9\x02\n" +
 	"\x13VirtualStreamResult\x12\x1b\n" +
 	"\tresult_id\x18\x01 \x01(\tR\bresultId\x12\x1f\n" +
 	"\vprovider_id\x18\x02 \x01(\tR\n" +
@@ -1204,7 +1255,7 @@ const file_silo_plugin_v1_virtual_stream_proto_rawDesc = "" +
 	"candidates\x12M\n" +
 	"\favailability\x18\x04 \x01(\v2).silo.plugin.v1.VirtualStreamAvailabilityR\favailability\x128\n" +
 	"\x05error\x18\x05 \x01(\v2\".silo.plugin.v1.VirtualStreamErrorR\x05error\x123\n" +
-	"\bmetadata\x18\x06 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\xad\x03\n" +
+	"\bmetadata\x18\x06 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\x99\x04\n" +
 	"\x1bResolveVirtualStreamRequest\x12#\n" +
 	"\rcapability_id\x18\x01 \x01(\tR\fcapabilityId\x12\x1d\n" +
 	"\n" +
@@ -1214,7 +1265,10 @@ const file_silo_plugin_v1_virtual_stream_proto_rawDesc = "" +
 	"\fexternal_ids\x18\x05 \x03(\v2<.silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntryR\vexternalIds\x12#\n" +
 	"\rseason_number\x18\x06 \x01(\x05R\fseasonNumber\x12%\n" +
 	"\x0eepisode_number\x18\a \x01(\x05R\repisodeNumber\x123\n" +
-	"\bmetadata\x18\b \x01(\v2\x17.google.protobuf.StructR\bmetadata\x1a>\n" +
+	"\bmetadata\x18\b \x01(\v2\x17.google.protobuf.StructR\bmetadata\x124\n" +
+	"\x16excluded_candidate_ids\x18\t \x03(\tR\x14excludedCandidateIds\x124\n" +
+	"\x16preferred_candidate_id\x18\n" +
+	" \x01(\tR\x14preferredCandidateId\x1a>\n" +
 	"\x10ExternalIdsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"[\n" +
@@ -1253,7 +1307,7 @@ func file_silo_plugin_v1_virtual_stream_proto_rawDescGZIP() []byte {
 }
 
 var file_silo_plugin_v1_virtual_stream_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_silo_plugin_v1_virtual_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_silo_plugin_v1_virtual_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_silo_plugin_v1_virtual_stream_proto_goTypes = []any{
 	(VirtualStreamAvailabilityState)(0),       // 0: silo.plugin.v1.VirtualStreamAvailabilityState
 	(VirtualStreamErrorCode)(0),               // 1: silo.plugin.v1.VirtualStreamErrorCode
@@ -1269,39 +1323,41 @@ var file_silo_plugin_v1_virtual_stream_proto_goTypes = []any{
 	(*VirtualStreamResult)(nil),               // 11: silo.plugin.v1.VirtualStreamResult
 	(*ResolveVirtualStreamRequest)(nil),       // 12: silo.plugin.v1.ResolveVirtualStreamRequest
 	(*ResolveVirtualStreamResponse)(nil),      // 13: silo.plugin.v1.ResolveVirtualStreamResponse
-	nil,                                       // 14: silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
-	(*timestamppb.Timestamp)(nil),             // 15: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),               // 16: google.protobuf.Duration
-	(*structpb.Struct)(nil),                   // 17: google.protobuf.Struct
+	nil,                                       // 14: silo.plugin.v1.VirtualStreamCandidate.RequestHeadersEntry
+	nil,                                       // 15: silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
+	(*timestamppb.Timestamp)(nil),             // 16: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),               // 17: google.protobuf.Duration
+	(*structpb.Struct)(nil),                   // 18: google.protobuf.Struct
 }
 var file_silo_plugin_v1_virtual_stream_proto_depIdxs = []int32{
 	2,  // 0: silo.plugin.v1.ListVirtualStreamProfilesResponse.profiles:type_name -> silo.plugin.v1.VirtualStreamProfile
 	0,  // 1: silo.plugin.v1.VirtualStreamAvailability.state:type_name -> silo.plugin.v1.VirtualStreamAvailabilityState
-	15, // 2: silo.plugin.v1.VirtualStreamAvailability.estimated_ready_at:type_name -> google.protobuf.Timestamp
+	16, // 2: silo.plugin.v1.VirtualStreamAvailability.estimated_ready_at:type_name -> google.protobuf.Timestamp
 	1,  // 3: silo.plugin.v1.VirtualStreamError.code:type_name -> silo.plugin.v1.VirtualStreamErrorCode
-	16, // 4: silo.plugin.v1.VirtualStreamError.retry_after:type_name -> google.protobuf.Duration
-	15, // 5: silo.plugin.v1.VirtualStreamCandidate.expires_at:type_name -> google.protobuf.Timestamp
+	17, // 4: silo.plugin.v1.VirtualStreamError.retry_after:type_name -> google.protobuf.Duration
+	16, // 5: silo.plugin.v1.VirtualStreamCandidate.expires_at:type_name -> google.protobuf.Timestamp
 	6,  // 6: silo.plugin.v1.VirtualStreamCandidate.resolution:type_name -> silo.plugin.v1.VirtualStreamResolution
 	7,  // 7: silo.plugin.v1.VirtualStreamCandidate.hdr:type_name -> silo.plugin.v1.VirtualStreamHDR
 	8,  // 8: silo.plugin.v1.VirtualStreamCandidate.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
 	9,  // 9: silo.plugin.v1.VirtualStreamCandidate.error:type_name -> silo.plugin.v1.VirtualStreamError
-	17, // 10: silo.plugin.v1.VirtualStreamCandidate.metadata:type_name -> google.protobuf.Struct
-	10, // 11: silo.plugin.v1.VirtualStreamResult.candidates:type_name -> silo.plugin.v1.VirtualStreamCandidate
-	8,  // 12: silo.plugin.v1.VirtualStreamResult.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
-	9,  // 13: silo.plugin.v1.VirtualStreamResult.error:type_name -> silo.plugin.v1.VirtualStreamError
-	17, // 14: silo.plugin.v1.VirtualStreamResult.metadata:type_name -> google.protobuf.Struct
-	14, // 15: silo.plugin.v1.ResolveVirtualStreamRequest.external_ids:type_name -> silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
-	17, // 16: silo.plugin.v1.ResolveVirtualStreamRequest.metadata:type_name -> google.protobuf.Struct
-	11, // 17: silo.plugin.v1.ResolveVirtualStreamResponse.result:type_name -> silo.plugin.v1.VirtualStreamResult
-	12, // 18: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:input_type -> silo.plugin.v1.ResolveVirtualStreamRequest
-	3,  // 19: silo.plugin.v1.VirtualStreamProvider.ListVirtualStreamProfiles:input_type -> silo.plugin.v1.ListVirtualStreamProfilesRequest
-	13, // 20: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:output_type -> silo.plugin.v1.ResolveVirtualStreamResponse
-	4,  // 21: silo.plugin.v1.VirtualStreamProvider.ListVirtualStreamProfiles:output_type -> silo.plugin.v1.ListVirtualStreamProfilesResponse
-	20, // [20:22] is the sub-list for method output_type
-	18, // [18:20] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	18, // 10: silo.plugin.v1.VirtualStreamCandidate.metadata:type_name -> google.protobuf.Struct
+	14, // 11: silo.plugin.v1.VirtualStreamCandidate.request_headers:type_name -> silo.plugin.v1.VirtualStreamCandidate.RequestHeadersEntry
+	10, // 12: silo.plugin.v1.VirtualStreamResult.candidates:type_name -> silo.plugin.v1.VirtualStreamCandidate
+	8,  // 13: silo.plugin.v1.VirtualStreamResult.availability:type_name -> silo.plugin.v1.VirtualStreamAvailability
+	9,  // 14: silo.plugin.v1.VirtualStreamResult.error:type_name -> silo.plugin.v1.VirtualStreamError
+	18, // 15: silo.plugin.v1.VirtualStreamResult.metadata:type_name -> google.protobuf.Struct
+	15, // 16: silo.plugin.v1.ResolveVirtualStreamRequest.external_ids:type_name -> silo.plugin.v1.ResolveVirtualStreamRequest.ExternalIdsEntry
+	18, // 17: silo.plugin.v1.ResolveVirtualStreamRequest.metadata:type_name -> google.protobuf.Struct
+	11, // 18: silo.plugin.v1.ResolveVirtualStreamResponse.result:type_name -> silo.plugin.v1.VirtualStreamResult
+	12, // 19: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:input_type -> silo.plugin.v1.ResolveVirtualStreamRequest
+	3,  // 20: silo.plugin.v1.VirtualStreamProvider.ListVirtualStreamProfiles:input_type -> silo.plugin.v1.ListVirtualStreamProfilesRequest
+	13, // 21: silo.plugin.v1.VirtualStreamProvider.ResolveVirtualStream:output_type -> silo.plugin.v1.ResolveVirtualStreamResponse
+	4,  // 22: silo.plugin.v1.VirtualStreamProvider.ListVirtualStreamProfiles:output_type -> silo.plugin.v1.ListVirtualStreamProfilesResponse
+	21, // [21:23] is the sub-list for method output_type
+	19, // [19:21] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_silo_plugin_v1_virtual_stream_proto_init() }
@@ -1315,7 +1371,7 @@ func file_silo_plugin_v1_virtual_stream_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_silo_plugin_v1_virtual_stream_proto_rawDesc), len(file_silo_plugin_v1_virtual_stream_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   13,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

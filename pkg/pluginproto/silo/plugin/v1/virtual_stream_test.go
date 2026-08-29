@@ -51,6 +51,9 @@ func TestVirtualStreamContract(t *testing.T) {
 		Container:      "mkv",
 		AudioLanguages:    []string{"eng", "fre"},
 		SubtitleLanguages: []string{"eng", "spa", "fre"},
+		RequestHeaders:    map[string]string{"Referer": "https://stream.internal/"},
+		HasAtmos:          true,
+		QualityScore:      150,
 		Availability: &pluginv1.VirtualStreamAvailability{
 			State:            pluginv1.VirtualStreamAvailabilityState_VIRTUAL_STREAM_AVAILABILITY_STATE_AVAILABLE,
 			Message:          "Stream ready for playback",
@@ -145,6 +148,9 @@ func TestVirtualStreamContract(t *testing.T) {
 	if len(c1.GetAudioLanguages()) != 2 || len(c1.GetSubtitleLanguages()) != 3 {
 		t.Errorf("c1 languages = %v / %v", c1.GetAudioLanguages(), c1.GetSubtitleLanguages())
 	}
+	if !c1.GetHasAtmos() || c1.GetQualityScore() != 150 || c1.GetRequestHeaders()["Referer"] != "https://stream.internal/" {
+		t.Errorf("c1 atmos/score/headers = %v / %v / %v", c1.GetHasAtmos(), c1.GetQualityScore(), c1.GetRequestHeaders())
+	}
 
 	c2 := result.GetCandidates()[1]
 	if !c2.GetHdr().GetHasDolbyVision() || c2.GetHdr().GetDolbyVisionProfile() != "Profile 8.1" {
@@ -227,6 +233,8 @@ func TestResolveVirtualStreamRPCMessages(t *testing.T) {
 			"tmdb": "27205",
 			"imdb": "tt1375666",
 		},
+		ExcludedCandidateIds: []string{"cand-dead-1", "cand-dead-2"},
+		PreferredCandidateId: "cand-known-good",
 	}
 
 	resp := &pluginv1.ResolveVirtualStreamResponse{
