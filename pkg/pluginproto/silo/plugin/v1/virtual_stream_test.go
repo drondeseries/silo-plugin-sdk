@@ -254,7 +254,39 @@ func TestResolveVirtualStreamRPCMessages(t *testing.T) {
 	if req.GetTitle() != "Inception" || req.GetYear() != 2010 {
 		t.Errorf("req = %v", req)
 	}
+	if len(req.GetExcludedCandidateIds()) != 2 || req.GetExcludedCandidateIds()[0] != "cand-dead-1" || req.GetExcludedCandidateIds()[1] != "cand-dead-2" {
+		t.Errorf("req excluded candidates = %v", req.GetExcludedCandidateIds())
+	}
+	if req.GetPreferredCandidateId() != "cand-known-good" {
+		t.Errorf("req preferred candidate = %q, want cand-known-good", req.GetPreferredCandidateId())
+	}
 	if len(resp.GetResult().GetCandidates()) != 1 {
 		t.Errorf("resp candidates len = %d, want 1", len(resp.GetResult().GetCandidates()))
+	}
+
+	// Proto binary roundtrip for request
+	reqBytes, err := proto.Marshal(req)
+	if err != nil {
+		t.Fatalf("proto.Marshal(req) error: %v", err)
+	}
+	var unmarshaledReq pluginv1.ResolveVirtualStreamRequest
+	if err := proto.Unmarshal(reqBytes, &unmarshaledReq); err != nil {
+		t.Fatalf("proto.Unmarshal(req) error: %v", err)
+	}
+	if len(unmarshaledReq.GetExcludedCandidateIds()) != 2 || unmarshaledReq.GetPreferredCandidateId() != "cand-known-good" {
+		t.Errorf("unmarshaled req fields mismatch: excluded=%v preferred=%q", unmarshaledReq.GetExcludedCandidateIds(), unmarshaledReq.GetPreferredCandidateId())
+	}
+
+	// Proto JSON roundtrip for request
+	reqJSON, err := protojson.Marshal(req)
+	if err != nil {
+		t.Fatalf("protojson.Marshal(req) error: %v", err)
+	}
+	var jsonReq pluginv1.ResolveVirtualStreamRequest
+	if err := protojson.Unmarshal(reqJSON, &jsonReq); err != nil {
+		t.Fatalf("protojson.Unmarshal(req) error: %v", err)
+	}
+	if len(jsonReq.GetExcludedCandidateIds()) != 2 || jsonReq.GetPreferredCandidateId() != "cand-known-good" {
+		t.Errorf("json req fields mismatch: excluded=%v preferred=%q", jsonReq.GetExcludedCandidateIds(), jsonReq.GetPreferredCandidateId())
 	}
 }
