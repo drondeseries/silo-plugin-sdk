@@ -309,4 +309,3 @@ func Serve(cfg ServeConfig) {
 		Logger:          cfg.Logger,
 	})
 }
-

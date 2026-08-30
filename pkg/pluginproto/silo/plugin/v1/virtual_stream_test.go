@@ -41,14 +41,14 @@ func TestVirtualStreamContract(t *testing.T) {
 		VideoCodec: "hevc",
 		AudioCodec: "eac3",
 		Hdr: &pluginv1.VirtualStreamHDR{
-			IsHdr:               true,
-			Format:              "HDR10",
-			HasDolbyVision:      false,
+			IsHdr:              true,
+			Format:             "HDR10",
+			HasDolbyVision:     false,
 			DolbyVisionProfile: "",
 		},
-		Bitrate:        8000000,
-		FileSizeBytes:  10737418240, // 10 GB
-		Container:      "mkv",
+		Bitrate:           8000000,
+		FileSizeBytes:     10737418240, // 10 GB
+		Container:         "mkv",
 		AudioLanguages:    []string{"eng", "fre"},
 		SubtitleLanguages: []string{"eng", "spa", "fre"},
 		RequestHeaders:    map[string]string{"Referer": "https://stream.internal/"},
@@ -60,7 +60,7 @@ func TestVirtualStreamContract(t *testing.T) {
 			EstimatedReadyAt: timestamppb.New(readyAt),
 			ProgressPercent:  100,
 		},
-		Error: nil,
+		Error:    nil,
 		Metadata: extraMeta,
 	}
 
@@ -79,14 +79,14 @@ func TestVirtualStreamContract(t *testing.T) {
 		VideoCodec: "hevc",
 		AudioCodec: "truehd",
 		Hdr: &pluginv1.VirtualStreamHDR{
-			IsHdr:               true,
-			Format:              "Dolby Vision",
-			HasDolbyVision:      true,
+			IsHdr:              true,
+			Format:             "Dolby Vision",
+			HasDolbyVision:     true,
 			DolbyVisionProfile: "Profile 8.1",
 		},
-		Bitrate:        25000000,
-		FileSizeBytes:  32212254720, // 30 GB
-		Container:      "mkv",
+		Bitrate:           25000000,
+		FileSizeBytes:     32212254720, // 30 GB
+		Container:         "mkv",
 		AudioLanguages:    []string{"eng"},
 		SubtitleLanguages: []string{"eng"},
 		Availability: &pluginv1.VirtualStreamAvailability{

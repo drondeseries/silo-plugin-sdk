@@ -19,7 +19,7 @@ func TestVirtualStreamProviderConvertRoundtrip(t *testing.T) {
 					SupportedMediaTypes:          []string{"movie", "episode"},
 					SupportedContainers:          []string{"mkv", "mp4"},
 					SupportsJustInTimeResolution: true,
-					SupportsMultipleCandidates:  true,
+					SupportsMultipleCandidates:   true,
 				},
 			},
 		},

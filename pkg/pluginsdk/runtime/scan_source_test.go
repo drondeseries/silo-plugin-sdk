@@ -12,7 +12,9 @@ import (
 // stubRuntime satisfies the required Runtime server (GRPCServer rejects a nil
 // Runtime) via the generated forward-compatible stub, so no method holds a nil
 // embedded interface.
-type stubRuntime struct{ pluginv1.UnimplementedRuntimeServer }
+type stubRuntime struct {
+	pluginv1.UnimplementedRuntimeServer
+}
 
 type stubScanSource struct{}
 
