@@ -109,7 +109,9 @@ Catalog image fields are host-owned opaque paths. Pass poster or backdrop paths
 back unchanged to resolve them into browser targets:
 
 ```go
-urls, err := host.ResolveCatalogImageURLs(ctx, []string{item.PosterURL, item.BackdropURL}, "thumbnail")
+import "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/imagevariant"
+
+urls, err := host.ResolveCatalogImageURLs(ctx, []string{item.PosterURL, item.BackdropURL}, imagevariant.Card)
 if err != nil { return }
 posterURL := urls[item.PosterURL]
 ```
@@ -117,6 +119,28 @@ posterURL := urls[item.PosterURL]
 Pass an empty variant to use the host default. Unresolved paths are omitted from
 the returned map, which is keyed by the original input path. Treat returned URLs
 as opaque host-generated browser targets.
+
+### Image variants
+
+The variant is a semantic size hint, not an exact pixel contract. The canonical
+vocabulary, smallest to largest, is exported as constants from
+`pkg/pluginsdk/imagevariant`:
+
+| Constant | Value | Intended surface |
+| --- | --- | --- |
+| `imagevariant.Card` | `card` | grid and list thumbnails, search results, cast rows (~300px posters) |
+| `imagevariant.Featured` | `featured` | hero artwork, detail pages, section headers (~500px posters/logos, ~1280px backdrops) |
+| `imagevariant.Large` | `large` | high-density displays and client-selected larger sizes (~780px posters/stills, ~1280px logos/backdrops) |
+| `imagevariant.Full` | `full` | full-screen and near-source rendering |
+| `imagevariant.Original` | `original` | unresized source asset |
+
+`large` was added after the initial vocabulary; the set is open and may grow
+again. A plugin that resolves variants itself (for example a metadata provider
+implementing `ResolveImageURL` / `ResolveImageURLs`) must treat an unknown
+variant as a request for its nearest supported size — or its default — and must
+never return an error. Implement the mapping as a `switch` with a `default` arm
+so new variants fall through to a sensible size instead of failing a resolve,
+which users see as a missing poster.
 
 ### Peer discovery and calls
 

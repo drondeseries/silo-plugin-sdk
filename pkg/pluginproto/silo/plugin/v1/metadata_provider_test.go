@@ -7,6 +7,14 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
+func assertFieldNumber(t *testing.T, message protoreflect.ProtoMessage, field string, want protoreflect.FieldNumber) {
+	t.Helper()
+	got := message.ProtoReflect().Descriptor().Fields().ByName(protoreflect.Name(field))
+	if got == nil || got.Number() != want {
+		t.Fatalf("%T.%s field number = %v, want %d", message, field, got, want)
+	}
+}
+
 func TestMetadataItemDescriptor_IncludesReleaseDate(t *testing.T) {
 	field := (&MetadataItem{}).ProtoReflect().Descriptor().Fields().ByName("release_date")
 	if field == nil {
@@ -38,21 +46,14 @@ func TestMetadataTitleDescriptors_IncludeAliasAndLanguageFields(t *testing.T) {
 		}
 	}
 
-	assertFieldNumber := func(message protoreflect.ProtoMessage, field string, want protoreflect.FieldNumber) {
-		t.Helper()
-		got := message.ProtoReflect().Descriptor().Fields().ByName(protoreflect.Name(field))
-		if got == nil || got.Number() != want {
-			t.Fatalf("%T.%s field number = %v, want %d", message, field, got, want)
-		}
-	}
-	assertFieldNumber(&ProviderSearchResult{}, "title_aliases", 9)
-	assertFieldNumber(&ProviderSearchResult{}, "title_language", 10)
-	assertFieldNumber(&ProviderSearchResult{}, "title_is_fallback", 11)
-	assertFieldNumber(&ProviderSearchResult{}, "original_language", 12)
-	assertFieldNumber(&MetadataItem{}, "title_aliases", 33)
-	assertFieldNumber(&MetadataItem{}, "title_language", 34)
-	assertFieldNumber(&MetadataItem{}, "title_is_fallback", 35)
-	assertFieldNumber(&MetadataItem{}, "title_aliases_complete", 36)
+	assertFieldNumber(t, &ProviderSearchResult{}, "title_aliases", 9)
+	assertFieldNumber(t, &ProviderSearchResult{}, "title_language", 10)
+	assertFieldNumber(t, &ProviderSearchResult{}, "title_is_fallback", 11)
+	assertFieldNumber(t, &ProviderSearchResult{}, "original_language", 12)
+	assertFieldNumber(t, &MetadataItem{}, "title_aliases", 33)
+	assertFieldNumber(t, &MetadataItem{}, "title_language", 34)
+	assertFieldNumber(t, &MetadataItem{}, "title_is_fallback", 35)
+	assertFieldNumber(t, &MetadataItem{}, "title_aliases_complete", 36)
 }
 
 func TestMetadataItem_OldPayloadDecodesWithOptionalTitleFields(t *testing.T) {
@@ -124,6 +125,11 @@ func TestMetadataProviderRequestDescriptors_IncludeProviderContext(t *testing.T)
 			message:   &GetImagesRequest{},
 		},
 		{
+			name:      "GetImagesRequest season_number",
+			fieldName: "season_number",
+			message:   &GetImagesRequest{},
+		},
+		{
 			name:      "SearchMetadataRequest language",
 			fieldName: "language",
 			message:   &SearchMetadataRequest{},
@@ -147,6 +153,32 @@ func TestMetadataProviderRequestDescriptors_IncludeProviderContext(t *testing.T)
 			}
 		})
 	}
+}
+
+func TestGetImagesRequest_SeasonNumberPreservesPresenceAndSpecials(t *testing.T) {
+	seasonZero := int32(0)
+	assertOptionalInt32Presence(
+		t,
+		&GetImagesRequest{SeasonNumber: &seasonZero},
+		&GetImagesRequest{},
+		func(message proto.Message) *int32 {
+			return message.(*GetImagesRequest).SeasonNumber
+		},
+	)
+	assertFieldNumber(t, &GetImagesRequest{}, "season_number", 5)
+}
+
+func TestImageRecord_SeasonNumberPreservesPresenceAndSpecials(t *testing.T) {
+	seasonZero := int32(0)
+	assertOptionalInt32Presence(
+		t,
+		&ImageRecord{SeasonNumber: &seasonZero},
+		&ImageRecord{},
+		func(message proto.Message) *int32 {
+			return message.(*ImageRecord).SeasonNumber
+		},
+	)
+	assertFieldNumber(t, &ImageRecord{}, "season_number", 7)
 }
 
 func TestMetadataProviderServiceDescriptor_IncludesPersonDetailRPC(t *testing.T) {

@@ -131,29 +131,14 @@ func TestWatchSyncDeviceAuthorizationPendingStatePreservesPresence(t *testing.T)
 
 func TestWatchSyncListPositionPreservesPresence(t *testing.T) {
 	zero := int32(0)
-	withZero := &WatchSyncEvent{ListPosition: &zero}
-	data, err := proto.Marshal(withZero)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var output WatchSyncEvent
-	if err := proto.Unmarshal(data, &output); err != nil {
-		t.Fatal(err)
-	}
-	if output.ListPosition == nil || output.GetListPosition() != 0 {
-		t.Fatalf("explicit zero list position = %#v", output.ListPosition)
-	}
-	omittedData, err := proto.Marshal(&WatchSyncEvent{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	var omittedOutput WatchSyncEvent
-	if err := proto.Unmarshal(omittedData, &omittedOutput); err != nil {
-		t.Fatal(err)
-	}
-	if omittedOutput.ListPosition != nil {
-		t.Fatal("omitted list position unexpectedly has presence")
-	}
+	assertOptionalInt32Presence(
+		t,
+		&WatchSyncEvent{ListPosition: &zero},
+		&WatchSyncEvent{},
+		func(message proto.Message) *int32 {
+			return message.(*WatchSyncEvent).ListPosition
+		},
+	)
 }
 
 func TestWatchSyncListTombstoneDoesNotRequireMedia(t *testing.T) {

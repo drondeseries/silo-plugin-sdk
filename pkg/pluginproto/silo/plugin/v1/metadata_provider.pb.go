@@ -1680,13 +1680,18 @@ func (x *GetEpisodesResponse) GetEpisodes() []*EpisodeRecord {
 }
 
 type ImageRecord struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Kind          string                 `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`
-	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
-	Language      string                 `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
-	Width         int32                  `protobuf:"varint,4,opt,name=width,proto3" json:"width,omitempty"`
-	Height        int32                  `protobuf:"varint,5,opt,name=height,proto3" json:"height,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,6,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Kind     string                 `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`
+	Url      string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	Language string                 `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
+	Width    int32                  `protobuf:"varint,4,opt,name=width,proto3" json:"width,omitempty"`
+	Height   int32                  `protobuf:"varint,5,opt,name=height,proto3" json:"height,omitempty"`
+	Metadata *structpb.Struct       `protobuf:"bytes,6,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	// Present only when the image is confirmed to belong to one exact season.
+	// Season zero represents Specials, so presence must not be inferred from the
+	// numeric value. Plugins should populate this field whenever the season is
+	// known, even when the request was already season-scoped.
+	SeasonNumber  *int32 `protobuf:"varint,7,opt,name=season_number,json=seasonNumber,proto3,oneof" json:"season_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1763,12 +1768,25 @@ func (x *ImageRecord) GetMetadata() *structpb.Struct {
 	return nil
 }
 
+func (x *ImageRecord) GetSeasonNumber() int32 {
+	if x != nil && x.SeasonNumber != nil {
+		return *x.SeasonNumber
+	}
+	return 0
+}
+
 type GetImagesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProviderId    string                 `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
-	ItemType      string                 `protobuf:"bytes,2,opt,name=item_type,json=itemType,proto3" json:"item_type,omitempty"`
-	ProviderIds   *structpb.Struct       `protobuf:"bytes,3,opt,name=provider_ids,json=providerIds,proto3" json:"provider_ids,omitempty"`
-	Language      string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ProviderId  string                 `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
+	ItemType    string                 `protobuf:"bytes,2,opt,name=item_type,json=itemType,proto3" json:"item_type,omitempty"`
+	ProviderIds *structpb.Struct       `protobuf:"bytes,3,opt,name=provider_ids,json=providerIds,proto3" json:"provider_ids,omitempty"`
+	Language    string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
+	// Present only when requesting artwork for a specific TV season.
+	// Season zero represents Specials, so presence must not be inferred from
+	// the numeric value. This scope is a request, not a guarantee: plugins that
+	// can filter by season should do so, but hosts must verify season attribution
+	// via ImageRecord.season_number rather than assume a filtered response.
+	SeasonNumber  *int32 `protobuf:"varint,5,opt,name=season_number,json=seasonNumber,proto3,oneof" json:"season_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1831,6 +1849,13 @@ func (x *GetImagesRequest) GetLanguage() string {
 	return ""
 }
 
+func (x *GetImagesRequest) GetSeasonNumber() int32 {
+	if x != nil && x.SeasonNumber != nil {
+		return *x.SeasonNumber
+	}
+	return 0
+}
+
 type GetImagesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Images        []*ImageRecord         `protobuf:"bytes,1,rep,name=images,proto3" json:"images,omitempty"`
@@ -1876,9 +1901,15 @@ func (x *GetImagesResponse) GetImages() []*ImageRecord {
 }
 
 type ResolveImageURLRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Path          string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	Variant       string                 `protobuf:"bytes,2,opt,name=variant,proto3" json:"variant,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Path  string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
+	// Semantic size hint, not an exact pixel contract. Canonical values, smallest
+	// to largest: "card", "featured", "large", "full", "original". Empty means
+	// the plugin default. The vocabulary is open and grows additively, so a
+	// plugin receiving an unknown variant must degrade gracefully to its nearest
+	// supported size and must not return an error. See
+	// pkg/pluginsdk/imagevariant for constants and the full rules.
+	Variant       string `protobuf:"bytes,2,opt,name=variant,proto3" json:"variant,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1972,9 +2003,15 @@ func (x *ResolveImageURLResponse) GetUrl() string {
 }
 
 type ResolveImageURLsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Paths         []string               `protobuf:"bytes,1,rep,name=paths,proto3" json:"paths,omitempty"`
-	Variant       string                 `protobuf:"bytes,2,opt,name=variant,proto3" json:"variant,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Paths []string               `protobuf:"bytes,1,rep,name=paths,proto3" json:"paths,omitempty"`
+	// Semantic size hint applied to every path in this request. Canonical values,
+	// smallest to largest: "card", "featured", "large", "full", "original". Empty
+	// means the plugin default. The vocabulary is open and grows additively, so a
+	// plugin receiving an unknown variant must degrade gracefully to its nearest
+	// supported size and must not return an error. See
+	// pkg/pluginsdk/imagevariant for constants and the full rules.
+	Variant       string `protobuf:"bytes,2,opt,name=variant,proto3" json:"variant,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2236,20 +2273,24 @@ const file_silo_plugin_v1_metadata_provider_proto_rawDesc = "" +
 	"\fprovider_ids\x18\x03 \x01(\v2\x17.google.protobuf.StructR\vproviderIds\x12\x1a\n" +
 	"\blanguage\x18\x04 \x01(\tR\blanguage\"P\n" +
 	"\x13GetEpisodesResponse\x129\n" +
-	"\bepisodes\x18\x01 \x03(\v2\x1d.silo.plugin.v1.EpisodeRecordR\bepisodes\"\xb2\x01\n" +
+	"\bepisodes\x18\x01 \x03(\v2\x1d.silo.plugin.v1.EpisodeRecordR\bepisodes\"\xee\x01\n" +
 	"\vImageRecord\x12\x12\n" +
 	"\x04kind\x18\x01 \x01(\tR\x04kind\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x1a\n" +
 	"\blanguage\x18\x03 \x01(\tR\blanguage\x12\x14\n" +
 	"\x05width\x18\x04 \x01(\x05R\x05width\x12\x16\n" +
 	"\x06height\x18\x05 \x01(\x05R\x06height\x123\n" +
-	"\bmetadata\x18\x06 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\xa8\x01\n" +
+	"\bmetadata\x18\x06 \x01(\v2\x17.google.protobuf.StructR\bmetadata\x12(\n" +
+	"\rseason_number\x18\a \x01(\x05H\x00R\fseasonNumber\x88\x01\x01B\x10\n" +
+	"\x0e_season_number\"\xe4\x01\n" +
 	"\x10GetImagesRequest\x12\x1f\n" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\x12\x1b\n" +
 	"\titem_type\x18\x02 \x01(\tR\bitemType\x12:\n" +
 	"\fprovider_ids\x18\x03 \x01(\v2\x17.google.protobuf.StructR\vproviderIds\x12\x1a\n" +
-	"\blanguage\x18\x04 \x01(\tR\blanguage\"H\n" +
+	"\blanguage\x18\x04 \x01(\tR\blanguage\x12(\n" +
+	"\rseason_number\x18\x05 \x01(\x05H\x00R\fseasonNumber\x88\x01\x01B\x10\n" +
+	"\x0e_season_number\"H\n" +
 	"\x11GetImagesResponse\x123\n" +
 	"\x06images\x18\x01 \x03(\v2\x1b.silo.plugin.v1.ImageRecordR\x06images\"F\n" +
 	"\x16ResolveImageURLRequest\x12\x12\n" +
@@ -2383,6 +2424,8 @@ func file_silo_plugin_v1_metadata_provider_proto_init() {
 	if File_silo_plugin_v1_metadata_provider_proto != nil {
 		return
 	}
+	file_silo_plugin_v1_metadata_provider_proto_msgTypes[18].OneofWrappers = []any{}
+	file_silo_plugin_v1_metadata_provider_proto_msgTypes[19].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
