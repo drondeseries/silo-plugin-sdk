@@ -23,17 +23,18 @@ const (
 )
 
 type CapabilityServers struct {
-	Runtime          pluginv1.RuntimeServer
-	MetadataProvider pluginv1.MetadataProviderServer
-	ImageResolver    pluginv1.ImageResolverServer
-	MarkerProvider   pluginv1.MarkerProviderServer
-	MediaAnalyzer    pluginv1.MediaAnalyzerServer
-	ScheduledTask    pluginv1.ScheduledTaskServer
-	ScanSource       pluginv1.ScanSourceServer
-	RequestRouter    pluginv1.RequestRouterServer
-	EventConsumer    pluginv1.EventConsumerServer
-	AuthProvider     pluginv1.AuthProviderServer
-	HttpRoutes       pluginv1.HttpRoutesServer
+	Runtime           pluginv1.RuntimeServer
+	MetadataProvider  pluginv1.MetadataProviderServer
+	ImageResolver     pluginv1.ImageResolverServer
+	MarkerProvider    pluginv1.MarkerProviderServer
+	MediaAnalyzer     pluginv1.MediaAnalyzerServer
+	ScheduledTask     pluginv1.ScheduledTaskServer
+	ScanSource        pluginv1.ScanSourceServer
+	RequestRouter     pluginv1.RequestRouterServer
+	EventConsumer     pluginv1.EventConsumerServer
+	AuthProvider      pluginv1.AuthProviderServer
+	HttpRoutes        pluginv1.HttpRoutesServer
+	WatchSyncProvider pluginv1.WatchSyncProviderServer
 }
 
 // Client wraps the gRPC connection to a plugin and provides typed accessors
@@ -66,6 +67,24 @@ func DefaultGRPCServer(opts []grpc.ServerOption) *grpc.Server {
 func DefaultPluginSet(servers CapabilityServers) plugin.PluginSet {
 	return plugin.PluginSet{
 		PluginSetName: &GRPCPlugin{Servers: servers},
+	}
+}
+
+// DefaultPluginSetWithWatchSyncDeviceAuthorization returns the default plugin
+// set plus the separate device-authorization service. Keeping that server out
+// of CapabilityServers preserves the released v0.12 unkeyed struct shape.
+func DefaultPluginSetWithWatchSyncDeviceAuthorization(
+	servers CapabilityServers,
+	deviceAuthorization pluginv1.WatchSyncDeviceAuthorizationServiceServer,
+) plugin.PluginSet {
+	if deviceAuthorization == nil {
+		return DefaultPluginSet(servers)
+	}
+	return plugin.PluginSet{
+		PluginSetName: &grpcPluginWithWatchSyncDeviceAuthorization{
+			GRPCPlugin:          &GRPCPlugin{Servers: servers},
+			deviceAuthorization: deviceAuthorization,
+		},
 	}
 }
 
@@ -128,9 +147,33 @@ func (c *Client) HttpRoutes() pluginv1.HttpRoutesClient {
 	return pluginv1.NewHttpRoutesClient(c.conn)
 }
 
+func (c *Client) WatchSyncProvider() pluginv1.WatchSyncProviderClient {
+	return pluginv1.NewWatchSyncProviderClient(c.conn)
+}
+
+func (c *Client) WatchSyncDeviceAuthorization() pluginv1.WatchSyncDeviceAuthorizationServiceClient {
+	return pluginv1.NewWatchSyncDeviceAuthorizationServiceClient(c.conn)
+}
+
 type GRPCPlugin struct {
 	plugin.Plugin
 	Servers CapabilityServers
+}
+
+type grpcPluginWithWatchSyncDeviceAuthorization struct {
+	*GRPCPlugin
+	deviceAuthorization pluginv1.WatchSyncDeviceAuthorizationServiceServer
+}
+
+func (p *grpcPluginWithWatchSyncDeviceAuthorization) GRPCServer(
+	broker *plugin.GRPCBroker,
+	server *grpc.Server,
+) error {
+	if err := p.GRPCPlugin.GRPCServer(broker, server); err != nil {
+		return err
+	}
+	pluginv1.RegisterWatchSyncDeviceAuthorizationServiceServer(server, p.deviceAuthorization)
+	return nil
 }
 
 func (p *GRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, server *grpc.Server) error {
@@ -169,6 +212,9 @@ func (p *GRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, server *grpc.Server) 
 	}
 	if p.Servers.HttpRoutes != nil {
 		pluginv1.RegisterHttpRoutesServer(server, p.Servers.HttpRoutes)
+	}
+	if p.Servers.WatchSyncProvider != nil {
+		pluginv1.RegisterWatchSyncProviderServer(server, p.Servers.WatchSyncProvider)
 	}
 	return nil
 }

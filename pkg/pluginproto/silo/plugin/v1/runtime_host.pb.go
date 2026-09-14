@@ -1969,9 +1969,13 @@ type ResolveCatalogImageURLsRequest struct {
 	// backdrop_url values returned by ListLibraryMedia. Paths are host-owned
 	// opaque strings; plugins should pass them back unchanged.
 	Paths []string `protobuf:"bytes,1,rep,name=paths,proto3" json:"paths,omitempty"`
-	// Optional image variant name understood by the host resolver. Empty uses the
-	// host default. Common values include "thumbnail" and "original"; unsupported
-	// variants are handled host-side.
+	// Optional semantic size hint understood by the host resolver, not an exact
+	// pixel contract. Canonical values, smallest to largest: "card", "featured",
+	// "large", "full", "original". Empty uses the host default. The vocabulary is
+	// open and grows additively; unsupported variants are degraded host-side to
+	// the nearest available size rather than erroring, and the same graceful
+	// degradation is required of plugins that resolve variants themselves. See
+	// pkg/pluginsdk/imagevariant for constants and the full rules.
 	Variant       string `protobuf:"bytes,2,opt,name=variant,proto3" json:"variant,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

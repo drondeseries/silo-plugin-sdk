@@ -2,7 +2,11 @@
 
 Public Go SDK for building Silo plugins. **Not a runtime plugin** — this is a library that plugin authors depend on via `go.mod`.
 
-`silo-plugin-sdk` is the source of truth for the plugin authoring contract. First-party consumers (Silo host, `silo-plugin-tmdb`, `silo-plugin-metadb`, every other plugin in this repo) pin tagged semver releases. Local multi-repo workspaces may use `go.work` or a temporary `replace`, but CI and release builds resolve the SDK from a published module tag.
+`silo-plugin-sdk` is the source of truth for the plugin authoring contract.
+First-party consumers—including the Silo host and the separate metadata,
+marker, autoscan, and watch-provider plugin repositories—pin tagged semantic
+versions. Local multi-repository workspaces may use `go.work`, but CI and
+release builds resolve the SDK from a published module tag.
 
 ## Packages
 
@@ -10,6 +14,8 @@ Public Go SDK for building Silo plugins. **Not a runtime plugin** — this is a 
 - `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/capability` — stable capability type constants for manifests and peer discovery.
 - `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/config` — config-schema helpers.
 - `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/convert` — type conversions.
+- `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/httpclient` — credentialed JSON-over-HTTP client with bounded responses and typed status errors.
+- `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/imagevariant` — canonical image-size variant strings.
 - `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/manifest` — manifest loading/rendering.
 - `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtime` — `manifest` subcommand + `Runtime` server scaffolding.
 - `github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtimedefault` — default `Runtime` implementation with `BindHostBroker` already wired; embed it to skip boilerplate.
@@ -22,12 +28,14 @@ The SDK ships protobuf contracts for every capability the host understands:
 - `metadata_provider.v1`
 - `marker_provider.v1`
 - `media_analyzer.v1`
+- `image_resolver.v1`
 - `scheduled_task.v1`
 - `event_consumer.v1`
 - `auth_provider.v1`
 - `http_routes.v1`
 - `request_router.v1`
 - `scan_source.v1`
+- `watch_sync_provider.v1`
 - `audiobook_backend.v1`
 - `ebook_backend.v1`
 
@@ -122,6 +130,81 @@ err = host.CallPluginJSON(ctx, runtimehost.CallPluginJSONRequest{
 
 The `auth_provider.v1` capability also exposes OAuth-flow RPCs (`InitAuthorize`, `ExchangeCode`, `RefreshSession`) for plugins that wrap external identity providers.
 
+## Watch sync providers
+
+`watch_sync_provider.v1` lets external plugins participate in Silo's host-owned
+watch-provider pipeline. The host owns encrypted per-profile credentials,
+authorization-code and device-code flow state, durable desired-state events,
+retries, ordering, and reconciliation. Plugins are stateless protocol adapters:
+they receive secrets only for the duration of an RPC, map rich movie/episode
+identity to an upstream service, and return typed apply or retry outcomes.
+
+Watch-sync plugins must not persist or log credentials, authorization codes,
+provider flow state, or secret configuration. `ApplyEvents` is an at-least-once
+contract; plugins must treat `event_id` as stable across retries and implement
+convergent desired-state updates rather than increments. That rule also applies
+to scrobble stops: replaying the same event ID must not create another play.
+For playback events, `completed` is the host's authoritative watched decision;
+plugins must not infer completion from `watch_history_id` or percentage alone.
+Metadata consumers must likewise check optional `season_number` presence: zero
+means Specials, while absence means no season scope. See
+[compatibility guidance](docs/compatibility.md#presence-sensitive-optional-fields)
+for the request and record rules.
+
+Authenticated RPCs receive the same host-owned capability, configuration, and
+credential data through `WatchSyncAuthenticatedContext`. The context exists
+only for one invocation and is never plugin configuration or plugin state.
+Credentials returned by any RPC are complete authoritative replacements, not
+patches. The host validates and persists them before consuming results, pages,
+or faults—even when the response contains a fault. If credential persistence
+fails, the host commits no other response data.
+
+Device-code plugins register both `WatchSyncProvider` and the separate
+`WatchSyncDeviceAuthorizationService`. Keeping device authorization in a
+second service preserves source compatibility for v0.12 Go providers that
+implemented `WatchSyncProviderServer` directly. Register it without changing
+the released `CapabilityServers` shape:
+
+```go
+runtime.ServeManifestWithOptions(manifestJSON, version, servers,
+    runtime.WithWatchSyncDeviceAuthorization(deviceAuthServer))
+```
+
+A pending poll may replace its opaque provider state, polling interval, and
+expiry; the host encrypts and persists those values before the next poll.
+Those updates remain part of the same user challenge, so the original user code
+and verification URL must stay valid until expiry. An explicitly empty
+`provider_state` clears the prior state; omitting it retains the prior state.
+
+`WatchSyncProviderConfig` is keyed by manifest config key and field, for example
+`provider.client_id`. Scalar values are sent as strings and structured values
+as JSON. Fields marked secret in the manifest are sent through `secret_values`;
+undeclared fields are treated as secret. Plugins must accept configuration from
+the RPC context rather than relying on process-global state.
+
+Descriptors and events use the shared `WatchSyncMediaType` enum so advertised
+support and delivered media cannot drift between string conventions. Apply
+results pair their delivery status with a typed fault: successful results omit
+the fault, temporary retries use `TEMPORARY`, rate limits use `RATE_LIMITED`
+with an optional delay, and rejected events use a non-retryable fault code.
+Connection-wide faults such as invalid credentials belong on the RPC response.
+
+`ListRemoteState` returns provider-neutral typed subrecords. `watched` carries a
+play count and last-watched time; `progress` carries a fractional percentage and
+paused time; `favorite` and `watchlist` carry list membership. An item may
+contain multiple state families. The host requests only the state families a
+sync phase needs, keeps that phase's `cursor` fixed while following ephemeral
+page tokens, commits each successful page, and only then persists the final
+`next_cursor`. `complete_snapshot=true` means the traversal is authoritative;
+when false, missing items are not deletions. An incremental favorite or
+watchlist removal is an item whose corresponding list state has `removed=true`;
+it may omit `media` when `provider_item_key` identifies a record previously
+returned to the host. When
+`provides_watchlist_order=true`, watchlist traversals must be complete snapshots
+and the order of returned watchlist states is the remote list order. Event
+`list_position` is presence-aware: an explicit zero means the first position,
+while omission means no requested ordering.
+
 ## Scan sources
 
 The `scan_source.v1` capability is for Autoscan providers. The host owns the
@@ -155,9 +238,27 @@ Before downstream repos stop using local workspace overrides, the required SDK c
 ## Build & test
 
 ```bash
-make proto       # regenerate protobuf code (uses locally vendored buf under ./bin/)
+make proto       # regenerate protobuf code (installs tools under ./bin/ as needed)
 go test ./...
 ```
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and
+[docs/compatibility.md](docs/compatibility.md) before opening a pull request.
+Public Go, protobuf, runtime, and manifest changes should start as an issue and
+identify affected downstream repositories.
+
+## Naming and branding
+
+Give your plugin its own name and mention Silo in the summary, for example
+"Trakt sync plugin for Silo". Repository and package names such as
+`silo-plugin-trakt` are fine, since "silo" only describes what the code plugs
+into. Avoid "Silo[word]" product names such as SiloTrakt, which read as
+official, and do not use the Silo logo as your plugin's icon. Set
+`publisher_name` to yourself, not "Silo", unless the plugin is published by the
+project. The full guidance, including what needs no permission, is at
+<https://siloserver.org/brand>.
 
 ## License
 
