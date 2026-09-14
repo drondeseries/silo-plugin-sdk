@@ -13,8 +13,9 @@ const (
 	MarkerProvider    = "marker_provider.v1"
 	AudiobookBackend  = "audiobook_backend.v1"
 	EbookBackend      = "ebook_backend.v1"
-	ScanSource        = "scan_source.v1"
-	WatchSyncProvider = "watch_sync_provider.v1"
+	ScanSource            = "scan_source.v1"
+	WatchSyncProvider     = "watch_sync_provider.v1"
+	VirtualStreamProvider = "virtual_stream_provider.v1"
 )
 
 // KnownTypes lists every capability type recognized by this SDK version.
@@ -32,4 +33,5 @@ var KnownTypes = []string{
 	EbookBackend,
 	ScanSource,
 	WatchSyncProvider,
+	VirtualStreamProvider,
 }
