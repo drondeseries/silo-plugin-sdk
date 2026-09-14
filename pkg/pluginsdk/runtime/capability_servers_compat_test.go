@@ -15,4 +15,5 @@ var _ = CapabilityServers{
 	nil,
 	nil,
 	nil,
+	nil,
 }
