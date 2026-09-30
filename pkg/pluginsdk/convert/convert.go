@@ -10,6 +10,12 @@ import (
 	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
 )
 
+// capabilityUnmarshal decodes stored capability metadata tolerantly. Unknown
+// fields and enum names are dropped rather than rejected, so a node on an older
+// SDK, in a mixed-version cluster sharing one database, can still load
+// descriptors written by a newer one.
+var capabilityUnmarshal = protojson.UnmarshalOptions{DiscardUnknown: true}
+
 type CapabilityRecord struct {
 	Type     string
 	ID       string
