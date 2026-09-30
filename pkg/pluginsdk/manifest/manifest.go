@@ -113,6 +113,9 @@ func Validate(manifest *pluginv1.PluginManifest) error {
 		if err := validateWatchSyncCapability(capability); err != nil {
 			return err
 		}
+		if err := validateRequestRouterCapability(capability); err != nil {
+			return err
+		}
 	}
 	for _, schema := range manifest.GlobalConfigSchema {
 		if err := validateConfigSchema(schema); err != nil {
@@ -182,6 +185,15 @@ func validateWatchSyncCapability(descriptor *pluginv1.CapabilityDescriptor) erro
 		if !watchSyncSlugPattern.MatchString(namespace) {
 			return fmt.Errorf("plugin capability %q: invalid external id namespace %q", descriptor.GetId(), namespace)
 		}
+	}
+	return nil
+}
+
+// validateRequestRouterCapability keeps the descriptor optional so request
+// routers built before it existed stay valid.
+func validateRequestRouterCapability(descriptor *pluginv1.CapabilityDescriptor) error {
+	if descriptor.GetType() != capability.RequestRouter && descriptor.GetRequestRouter() != nil {
+		return fmt.Errorf("plugin capability %q: request_router descriptor requires type %q", descriptor.GetId(), capability.RequestRouter)
 	}
 	return nil
 }

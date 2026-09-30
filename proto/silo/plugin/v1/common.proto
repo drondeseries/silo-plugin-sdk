@@ -5,6 +5,7 @@ package silo.plugin.v1;
 option go_package = "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1;pluginv1";
 
 import "google/protobuf/struct.proto";
+import "silo/plugin/v1/request_router.proto";
 import "silo/plugin/v1/virtual_stream.proto";
 import "silo/plugin/v1/watch_sync_provider.proto";
 
@@ -144,9 +145,16 @@ message CapabilityDescriptor {
   // connection and authorization UI without launching the plugin.
   WatchSyncProviderDescriptor watch_sync_provider = 10;
 
+  // Typed request-router contract metadata. Only meaningful for capabilities
+  // of type "request_router.v1". Optional: an absent descriptor declares no
+  // optional request-router features.
+  RequestRouterDescriptor request_router = 12;
+
   // Typed virtual stream provider contract metadata. Only meaningful for
-  // capabilities of type "virtual_stream_provider.v1".
-  VirtualStreamProviderDescriptor virtual_stream_provider = 11;
+  // capabilities of type "virtual_stream_provider.v1". Fork numbering:
+  // upstream claimed 11 after the fork assigned it, so the virtual
+  // descriptor rides 13 to keep both wire-compatible.
+  VirtualStreamProviderDescriptor virtual_stream_provider = 13;
 }
 
 // PluginPresentation describes a plugin for server operators and links them to
