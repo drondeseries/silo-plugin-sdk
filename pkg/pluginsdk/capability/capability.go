@@ -2,20 +2,23 @@
 package capability
 
 const (
-	EventConsumer     = "event_consumer.v1"
-	HTTPRoutes        = "http_routes.v1"
-	ScheduledTask     = "scheduled_task.v1"
-	RequestRouter     = "request_router.v1"
-	MediaAnalyzer     = "media_analyzer.v1"
-	AuthProvider      = "auth_provider.v1"
-	MetadataProvider  = "metadata_provider.v1"
-	ImageResolver     = "image_resolver.v1"
-	MarkerProvider    = "marker_provider.v1"
-	AudiobookBackend  = "audiobook_backend.v1"
-	EbookBackend      = "ebook_backend.v1"
+	EventConsumer         = "event_consumer.v1"
+	HTTPRoutes            = "http_routes.v1"
+	ScheduledTask         = "scheduled_task.v1"
+	RequestRouter         = "request_router.v1"
+	MediaAnalyzer         = "media_analyzer.v1"
+	AuthProvider          = "auth_provider.v1"
+	MetadataProvider      = "metadata_provider.v1"
+	ImageResolver         = "image_resolver.v1"
+	MarkerProvider        = "marker_provider.v1"
+	AudiobookBackend      = "audiobook_backend.v1"
+	EbookBackend          = "ebook_backend.v1"
 	ScanSource            = "scan_source.v1"
 	WatchSyncProvider     = "watch_sync_provider.v1"
 	VirtualStreamProvider = "virtual_stream_provider.v1"
+	// NetworkAccessProvider marks a resident plugin that gives the deployment
+	// an overlay-network identity (Tailscale, NetBird, ...). Added in v0.16.0.
+	NetworkAccessProvider = "network_access_provider.v1"
 )
 
 // KnownTypes lists every capability type recognized by this SDK version.
@@ -34,4 +37,5 @@ var KnownTypes = []string{
 	ScanSource,
 	WatchSyncProvider,
 	VirtualStreamProvider,
+	NetworkAccessProvider,
 }
